@@ -43,10 +43,13 @@ Boost provides your agent 15+ tools and skills that help agents build Laravel ap
 
 ## Deploy (cPanel, sem SSH)
 
+**Importante — Document Root:** a raiz da app Laravel (`.env`, `app/`, `vendor/`) NUNCA pode ficar acessível pela web. `.cpanel.yml` sincroniza para `/home/mercadom/rui-tech-helper-api-app/` (fora de `public_html`). O subdomínio `api.oruidoscomputadores.pt` (cPanel → Domains) tem de apontar o Document Root para `/home/mercadom/rui-tech-helper-api-app/public`, nunca para a pasta de topo. Confirmar isto antes do primeiro deploy — é o único jeito de servir Laravel em shared hosting sem SSH.
+
 1. cPanel → Git Version Control → clonar este repo em `/home/mercadom/repositories/rui-tech-helper-api`.
-2. Primeiro deploy: copiar manualmente `.env` (com os valores reais) para `/home/mercadom/public_html/oruidoscomputadores.pt/api/.env` via File Manager ou FTP. Não está no git.
-3. Cada `git push` para `main` + "Update from Remote" no cPanel corre `.cpanel.yml`, que sincroniza o código para a docroot sem tocar em `.env` nem `storage/`.
-4. Migrations: correm sempre localmente, nunca no servidor — `php artisan migrate` contra o MySQL remoto (IP branco-listado em cPanel → Remote MySQL).
+2. cPanel → Domains → criar/editar o subdomínio `api.oruidoscomputadores.pt` com Document Root `/home/mercadom/rui-tech-helper-api-app/public`.
+3. Primeiro deploy: copiar manualmente `.env` (com os valores reais) para `/home/mercadom/rui-tech-helper-api-app/.env` via File Manager ou FTP. Não está no git.
+4. Cada `git push` para `main` + "Update from Remote" no cPanel corre `.cpanel.yml`, que sincroniza o código para `/home/mercadom/rui-tech-helper-api-app/` sem tocar em `.env` nem `storage/`.
+5. Migrations: correm sempre localmente, nunca no servidor — `php artisan migrate` contra o MySQL remoto (IP branco-listado em cPanel → Remote MySQL).
 
 ## Contributing
 
