@@ -1,6 +1,6 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/<cpanel-user>/api.oruidoscomputadores.pt/
+    - export DEPLOYPATH=/home/mercadom/api.oruidoscomputadores.pt/
     - rsync -av --exclude='.env' --exclude='.git' --exclude='storage/app' --exclude='storage/logs' ./ $DEPLOYPATH
     - /usr/local/bin/php -r "if (!file_exists('{$DEPLOYPATH}.env')) { echo 'AVISO: .env em falta em produção, criar manualmente.'; }"
