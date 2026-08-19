@@ -44,7 +44,7 @@ Boost provides your agent 15+ tools and skills that help agents build Laravel ap
 ## Deploy (cPanel, sem SSH)
 
 1. cPanel → Git Version Control → clonar este repo em `/home/mercadom/repositories/rui-tech-helper-api`.
-2. Primeiro deploy: copiar manualmente `.env` (com os valores reais) para `/home/mercadom/api.oruidoscomputadores.pt/.env` via File Manager ou FTP. Não está no git.
+2. Primeiro deploy: copiar manualmente `.env` (com os valores reais) para `/home/mercadom/public_html/oruidoscomputadores.pt/api/.env` via File Manager ou FTP. Não está no git.
 3. Cada `git push` para `main` + "Update from Remote" no cPanel corre `.cpanel.yml`, que sincroniza o código para a docroot sem tocar em `.env` nem `storage/`.
 4. Migrations: correm sempre localmente, nunca no servidor — `php artisan migrate` contra o MySQL remoto (IP branco-listado em cPanel → Remote MySQL).
 
