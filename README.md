@@ -41,6 +41,13 @@ php artisan boost:install
 
 Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
 
+## Deploy (cPanel, sem SSH)
+
+1. cPanel → Git Version Control → clonar este repo em `/home/<user>/repositories/rui-tech-helper-api`.
+2. Primeiro deploy: copiar manualmente `.env` (com os valores reais) para `/home/<user>/api.oruidoscomputadores.pt/.env` via File Manager ou FTP. Não está no git.
+3. Cada `git push` para `main` + "Update from Remote" no cPanel corre `.cpanel.yml`, que sincroniza o código para a docroot sem tocar em `.env` nem `storage/`.
+4. Migrations: correm sempre localmente, nunca no servidor — `php artisan migrate` contra o MySQL remoto (IP branco-listado em cPanel → Remote MySQL).
+
 ## Contributing
 
 Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
