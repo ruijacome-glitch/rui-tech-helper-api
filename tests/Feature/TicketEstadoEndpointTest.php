@@ -53,6 +53,7 @@ test('tecnico atribuido muda estado do seu ticket', function () {
     ]);
 
     $response->assertStatus(200);
+    $response->assertJsonPath('ticket.estado', 'em_curso');
 });
 
 test('tecnico nao atribuido nao pode mudar estado', function () {
