@@ -66,6 +66,8 @@ test('gerarReferenciaMb lanca excecao quando ifthenpay falha', function () {
     $pagamento = criarPagamentoPendente();
 
     expect(fn () => (new IfthenPayService)->gerarReferenciaMb($pagamento))->toThrow(RuntimeException::class);
+    expect($pagamento->fresh()->estado->value)->toBe('pendente');
+    expect($pagamento->fresh()->entidade)->toBeNull();
 });
 
 test('gerarPedidoMbway grava telefone e pedido', function () {

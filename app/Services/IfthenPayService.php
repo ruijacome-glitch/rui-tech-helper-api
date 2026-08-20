@@ -15,11 +15,15 @@ class IfthenPayService
 
     public function gerarReferenciaMb(Pagamento $pagamento): Pagamento
     {
-        $response = Http::asForm()->post(self::MB_ENDPOINT, [
-            'mbKey' => config('services.ifthenpay.mb_key'),
-            'orderId' => (string) $pagamento->orcamento_id,
-            'amount' => number_format((float) $pagamento->valor, 2, '.', ''),
-        ]);
+        try {
+            $response = Http::asForm()->timeout(10)->connectTimeout(5)->post(self::MB_ENDPOINT, [
+                'mbKey' => config('services.ifthenpay.mb_key'),
+                'orderId' => (string) $pagamento->orcamento_id,
+                'amount' => (string) $pagamento->valor,
+            ]);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            throw new RuntimeException('Falha de ligacao ao gerar referencia Multibanco: '.$e->getMessage(), previous: $e);
+        }
 
         $body = $response->json();
 
@@ -42,12 +46,16 @@ class IfthenPayService
 
     public function gerarPedidoMbway(Pagamento $pagamento, string $telefone): Pagamento
     {
-        $response = Http::asForm()->post(self::MBWAY_ENDPOINT, [
-            'mbwaykey' => config('services.ifthenpay.mbway_key'),
-            'orderid' => (string) $pagamento->orcamento_id,
-            'amount' => number_format((float) $pagamento->valor, 2, '.', ''),
-            'mobilenumber' => $telefone,
-        ]);
+        try {
+            $response = Http::asForm()->timeout(10)->connectTimeout(5)->post(self::MBWAY_ENDPOINT, [
+                'mbwaykey' => config('services.ifthenpay.mbway_key'),
+                'orderid' => (string) $pagamento->orcamento_id,
+                'amount' => (string) $pagamento->valor,
+                'mobilenumber' => $telefone,
+            ]);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            throw new RuntimeException('Falha de ligacao ao gerar pedido MB WAY: '.$e->getMessage(), previous: $e);
+        }
 
         $body = $response->json();
 
