@@ -35,4 +35,5 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->prefix('cliente')->group(fu
     Route::post('/tickets', [\App\Http\Controllers\Tickets\TicketController::class, 'storeCliente']);
     Route::get('/tickets/{ticket}', [\App\Http\Controllers\Tickets\TicketController::class, 'show']);
     Route::post('/orcamentos/{orcamento}/decisao', [\App\Http\Controllers\Tickets\OrcamentoController::class, 'decisao']);
+    Route::post('/orcamentos/{orcamento}/pagamento', [\App\Http\Controllers\Tickets\PagamentoController::class, 'store']);
 });
