@@ -7,8 +7,10 @@ use App\Enums\PagamentoOrigem;
 use App\Http\Controllers\Controller;
 use App\Jobs\EmitirFacturaRecibo;
 use App\Models\Orcamento;
+use App\Models\Pagamento;
 use App\Services\IfthenPayService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PagamentoController extends Controller
 {
@@ -20,26 +22,39 @@ class PagamentoController extends Controller
         $pagamento = $orcamento->pagamento;
         abort_if($pagamento === null, 409, 'Orcamento ainda nao foi aprovado.');
 
-        if ($pagamento->estado === PagamentoEstado::Pago) {
-            return response()->json(['pagamento' => $pagamento], 200);
-        }
-
-        if ($pagamento->estado === PagamentoEstado::Pendente && $pagamento->expires_at !== null && ! $pagamento->estaExpirado()) {
-            return response()->json(['pagamento' => $pagamento], 200);
-        }
-
         $data = $request->validate([
             'metodo' => ['required', 'in:mb,mbway'],
             'telefone' => ['required_if:metodo,mbway', 'nullable', 'string', 'max:20'],
         ]);
 
-        $pagamento = $data['metodo'] === 'mb'
-            ? $ifthenPay->gerarReferenciaMb($pagamento)
-            : $ifthenPay->gerarPedidoMbway($pagamento, $data['telefone']);
+        return DB::transaction(function () use ($pagamento, $data, $ifthenPay) {
+            $locked = Pagamento::whereKey($pagamento->id)->lockForUpdate()->firstOrFail();
 
-        return response()->json(['pagamento' => $pagamento], 201);
+            if ($locked->estado === PagamentoEstado::Pago) {
+                return response()->json(['pagamento' => $locked], 200);
+            }
+
+            if ($locked->estado === PagamentoEstado::Pendente && $locked->expires_at !== null && ! $locked->estaExpirado()) {
+                return response()->json(['pagamento' => $locked], 200);
+            }
+
+            try {
+                $resultado = $data['metodo'] === 'mb'
+                    ? $ifthenPay->gerarReferenciaMb($locked)
+                    : $ifthenPay->gerarPedidoMbway($locked, $data['telefone']);
+            } catch (\RuntimeException $e) {
+                abort(502, 'Nao foi possivel gerar a referencia de pagamento, tente novamente.');
+            }
+
+            return response()->json(['pagamento' => $resultado], 201);
+        });
     }
 
+    /**
+     * Protected by role:admin route middleware (wired in Task 8) — matches the
+     * convention used by other admin-only controllers in this codebase, which
+     * rely on route-level middleware rather than an in-method role check.
+     */
     public function marcarPago(Orcamento $orcamento)
     {
         $pagamento = $orcamento->pagamento;
