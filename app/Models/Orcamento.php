@@ -6,6 +6,7 @@ use App\Enums\OrcamentoEstado;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Orcamento extends Model
 {
@@ -35,6 +36,11 @@ class Orcamento extends Model
     public function itens(): HasMany
     {
         return $this->hasMany(OrcamentoItem::class);
+    }
+
+    public function pagamento(): HasOne
+    {
+        return $this->hasOne(Pagamento::class);
     }
 
     public function total(): float

@@ -2,10 +2,12 @@
 // app/Http/Controllers/Tickets/OrcamentoController.php
 namespace App\Http\Controllers\Tickets;
 
+use App\Enums\PagamentoEstado;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Mail\OrcamentoPronto;
 use App\Models\Orcamento;
+use App\Models\Pagamento;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -54,10 +56,22 @@ class OrcamentoController extends Controller
             'decisao' => ['required', 'in:aprovado,rejeitado'],
         ]);
 
+        if ($data['decisao'] === 'aprovado') {
+            abort_if(empty($cliente->nif), 422, 'Complete o NIF no seu perfil antes de aceitar o orcamento.');
+        }
+
         $orcamento->update([
             'estado' => $data['decisao'],
             'decided_at' => now(),
         ]);
+
+        if ($data['decisao'] === 'aprovado') {
+            Pagamento::create([
+                'orcamento_id' => $orcamento->id,
+                'estado' => PagamentoEstado::Pendente,
+                'valor' => $orcamento->fresh('itens')->total(),
+            ]);
+        }
 
         return response()->json(['orcamento' => $orcamento->fresh()]);
     }

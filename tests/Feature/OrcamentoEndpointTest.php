@@ -64,6 +64,7 @@ test('tecnico nao atribuido nao pode criar orcamento', function () {
 test('cliente aprova orcamento', function () {
     $tecnico = User::factory()->create(['role' => 'tecnico']);
     $ticket = criarTicketComTecnicoParaOrcamento($tecnico);
+    $ticket->cliente->update(['nif' => '123456789']);
     $orcamento = Orcamento::create(['ticket_id' => $ticket->id, 'versao' => 1, 'estado' => 'pendente']);
 
     $response = $this->actingAs($ticket->cliente->user)->postJson("/api/cliente/orcamentos/{$orcamento->id}/decisao", [
@@ -120,4 +121,48 @@ test('cliente de outro ticket nao pode decidir orcamento', function () {
     ]);
 
     $response->assertStatus(403);
+});
+
+test('cliente sem nif nao consegue aprovar orcamento', function () {
+    $tecnico = User::factory()->create(['role' => 'tecnico']);
+    $ticket = criarTicketComTecnicoParaOrcamento($tecnico);
+    $ticket->cliente->update(['nif' => null]);
+    $orcamento = Orcamento::create(['ticket_id' => $ticket->id, 'versao' => 1, 'estado' => 'pendente']);
+
+    $response = $this->actingAs($ticket->cliente->user)->postJson("/api/cliente/orcamentos/{$orcamento->id}/decisao", [
+        'decisao' => 'aprovado',
+    ]);
+
+    $response->assertStatus(422);
+    expect(\App\Models\Pagamento::count())->toBe(0);
+});
+
+test('cliente com nif aprova orcamento e cria pagamento pendente com valor do orcamento', function () {
+    $tecnico = User::factory()->create(['role' => 'tecnico']);
+    $ticket = criarTicketComTecnicoParaOrcamento($tecnico);
+    $ticket->cliente->update(['nif' => '123456789']);
+    $orcamento = Orcamento::create(['ticket_id' => $ticket->id, 'versao' => 1, 'estado' => 'pendente']);
+    $orcamento->itens()->create(['descricao' => 'Fonte', 'quantidade' => 1, 'preco_unitario' => 45.50]);
+
+    $response = $this->actingAs($ticket->cliente->user)->postJson("/api/cliente/orcamentos/{$orcamento->id}/decisao", [
+        'decisao' => 'aprovado',
+    ]);
+
+    $response->assertStatus(200);
+    $pagamento = \App\Models\Pagamento::where('orcamento_id', $orcamento->id)->first();
+    expect($pagamento)->not->toBeNull();
+    expect($pagamento->estado->value)->toBe('pendente');
+    expect((float) $pagamento->valor)->toBe(45.50);
+});
+
+test('cliente rejeita orcamento e nao cria pagamento', function () {
+    $tecnico = User::factory()->create(['role' => 'tecnico']);
+    $ticket = criarTicketComTecnicoParaOrcamento($tecnico);
+    $orcamento = Orcamento::create(['ticket_id' => $ticket->id, 'versao' => 1, 'estado' => 'pendente']);
+
+    $this->actingAs($ticket->cliente->user)->postJson("/api/cliente/orcamentos/{$orcamento->id}/decisao", [
+        'decisao' => 'rejeitado',
+    ])->assertStatus(200);
+
+    expect(\App\Models\Pagamento::count())->toBe(0);
 });
