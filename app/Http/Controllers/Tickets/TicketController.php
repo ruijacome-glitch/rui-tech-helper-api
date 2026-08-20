@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Tickets;
 
 use App\Enums\TicketEstado;
 use App\Enums\TicketOrigem;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class TicketController extends Controller
 {
@@ -14,7 +16,7 @@ class TicketController extends Controller
     {
         $data = $request->validate([
             'cliente_id' => ['required', 'exists:clientes,id'],
-            'tecnico_id' => ['nullable', 'exists:users,id'],
+            'tecnico_id' => ['nullable', Rule::exists('users', 'id')->where('role', UserRole::Tecnico->value)],
             'categoria' => ['required', 'in:hardware,software,rede,backup'],
             'prioridade' => ['required', 'in:urgente,normal,baixa'],
             'titulo' => ['required', 'string', 'max:255'],

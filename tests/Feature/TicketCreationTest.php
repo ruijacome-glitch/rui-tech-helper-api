@@ -95,6 +95,73 @@ test('cliente sem ficha associada recebe 409 ao criar ticket', function () {
     $response->assertStatus(409);
 });
 
+test('admin nao pode atribuir cliente como tecnico', function () {
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+    $cliente = criarClienteComUser();
+    $outroClienteUser = User::factory()->create(['role' => UserRole::Cliente]);
+
+    $response = $this->actingAs($admin)->postJson('/api/admin/tickets', [
+        'cliente_id' => $cliente->id,
+        'tecnico_id' => $outroClienteUser->id,
+        'categoria' => 'hardware',
+        'prioridade' => 'normal',
+        'titulo' => 'PC nao liga',
+        'descricao' => 'Nao arranca.',
+    ]);
+
+    $response->assertStatus(422);
+});
+
+test('mass assignment de estado e origem e ignorado na rota admin', function () {
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+    $cliente = criarClienteComUser();
+
+    $response = $this->actingAs($admin)->postJson('/api/admin/tickets', [
+        'cliente_id' => $cliente->id,
+        'categoria' => 'hardware',
+        'prioridade' => 'normal',
+        'titulo' => 'PC nao liga',
+        'descricao' => 'Nao arranca.',
+        'estado' => 'resolvido',
+        'origem' => 'cliente',
+    ]);
+
+    $response->assertStatus(201);
+    $response->assertJsonPath('ticket.estado', 'aberto');
+    $response->assertJsonPath('ticket.origem', 'admin');
+});
+
+test('mass assignment de cliente_id e ignorado na rota cliente', function () {
+    $cliente = criarClienteComUser();
+    $outroCliente = criarClienteComUser();
+
+    $response = $this->actingAs($cliente->user)->postJson('/api/cliente/tickets', [
+        'categoria' => 'rede',
+        'prioridade' => 'baixa',
+        'titulo' => 'Wifi lento',
+        'descricao' => 'Internet muito lenta em casa.',
+        'cliente_id' => $outroCliente->id,
+    ]);
+
+    $response->assertStatus(201);
+    $response->assertJsonPath('ticket.cliente_id', $cliente->id);
+});
+
+test('categoria invalida falha validacao', function () {
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+    $cliente = criarClienteComUser();
+
+    $response = $this->actingAs($admin)->postJson('/api/admin/tickets', [
+        'cliente_id' => $cliente->id,
+        'categoria' => 'nonexistent',
+        'prioridade' => 'normal',
+        'titulo' => 'PC nao liga',
+        'descricao' => 'Nao arranca.',
+    ]);
+
+    $response->assertStatus(422);
+});
+
 test('validacao falha com campos em falta', function () {
     $admin = User::factory()->create(['role' => UserRole::Admin]);
     $cliente = criarClienteComUser();
