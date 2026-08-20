@@ -13,6 +13,8 @@ use App\Models\Ticket;
 use App\Models\User;
 
 test('email de orcamento pronto contem titulo do ticket e total', function () {
+    config(['services.frontend_url' => 'https://oruidoscomputadores.pt']);
+
     $clienteUser = User::factory()->create(['role' => UserRole::Cliente]);
     $cliente = Cliente::create([
         'user_id' => $clienteUser->id,
@@ -35,5 +37,6 @@ test('email de orcamento pronto contem titulo do ticket e total', function () {
     $rendered = (new OrcamentoPronto($orcamento->fresh('itens')))->render();
 
     expect($rendered)->toContain('PC nao liga');
-    expect($rendered)->toContain('50');
+    expect($rendered)->toContain('50.00EUR');
+    expect($rendered)->toContain('https://oruidoscomputadores.pt/portal/tickets/'.$ticket->id);
 });

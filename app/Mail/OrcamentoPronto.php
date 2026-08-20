@@ -32,7 +32,7 @@ class OrcamentoPronto extends Mailable
                 'ticket' => $this->orcamento->ticket,
                 'orcamento' => $this->orcamento,
                 'total' => $this->orcamento->total(),
-                'portalUrl' => config('app.frontend_url', 'https://oruidoscomputadores.pt') . '/portal/tickets/' . $this->orcamento->ticket_id,
+                'portalUrl' => rtrim(config('services.frontend_url'), '/').'/portal/tickets/'.$this->orcamento->ticket_id,
             ],
         );
     }
