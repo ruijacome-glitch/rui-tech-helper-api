@@ -15,6 +15,8 @@ return new class extends Migration
             $table->string('estado')->default('pendente');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('decided_at')->nullable();
+
+            $table->unique(['ticket_id', 'versao']);
         });
     }
 

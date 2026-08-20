@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\OrcamentoEstado;
 use App\Enums\TicketCategoria;
 use App\Enums\TicketEstado;
 use App\Enums\TicketOrigem;
@@ -36,7 +37,7 @@ test('total soma quantidade x preco_unitario dos itens', function () {
     $orcamento = Orcamento::create([
         'ticket_id' => $ticket->id,
         'versao' => 1,
-        'estado' => 'pendente',
+        'estado' => OrcamentoEstado::Pendente,
     ]);
     $orcamento->itens()->create(['descricao' => 'Fonte de alimentacao', 'quantidade' => 1, 'preco_unitario' => 45.50]);
     $orcamento->itens()->create(['descricao' => 'Mao de obra', 'quantidade' => 2, 'preco_unitario' => 20.00]);
@@ -46,7 +47,7 @@ test('total soma quantidade x preco_unitario dos itens', function () {
 
 test('proximaVersao incrementa a partir da ultima versao do ticket', function () {
     $ticket = criarTicketParaOrcamento();
-    Orcamento::create(['ticket_id' => $ticket->id, 'versao' => 1, 'estado' => 'rejeitado']);
+    Orcamento::create(['ticket_id' => $ticket->id, 'versao' => 1, 'estado' => OrcamentoEstado::Rejeitado]);
 
     expect(Orcamento::proximaVersao($ticket))->toBe(2);
 });
