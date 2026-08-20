@@ -88,8 +88,32 @@ class TicketController extends Controller
             'created_at' => $evento->created_at,
         ]);
 
+        $anexos = $ticket->anexos()->orderBy('created_at')->get()->map(fn ($anexo) => [
+            'id' => $anexo->id,
+            'nome_original' => $anexo->nome_original,
+            'content_type' => $anexo->content_type,
+            'size' => $anexo->size,
+            'created_at' => $anexo->created_at,
+        ]);
+
+        $orcamentos = $ticket->orcamentos()->with('itens')->orderBy('versao')->get()->map(fn ($orcamento) => [
+            'id' => $orcamento->id,
+            'versao' => $orcamento->versao,
+            'estado' => $orcamento->estado->value,
+            'created_at' => $orcamento->created_at,
+            'decided_at' => $orcamento->decided_at,
+            'itens' => $orcamento->itens->map(fn ($item) => [
+                'descricao' => $item->descricao,
+                'quantidade' => $item->quantidade,
+                'preco_unitario' => $item->preco_unitario,
+            ]),
+            'total' => $orcamento->total(),
+        ]);
+
         $ticketArray = $ticket->toArray();
         $ticketArray['eventos'] = $eventos;
+        $ticketArray['anexos'] = $anexos;
+        $ticketArray['orcamentos'] = $orcamentos;
 
         return response()->json(['ticket' => $ticketArray]);
     }
