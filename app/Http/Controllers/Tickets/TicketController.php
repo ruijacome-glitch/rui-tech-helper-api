@@ -53,4 +53,44 @@ class TicketController extends Controller
 
         return response()->json(['ticket' => $ticket], 201);
     }
+
+    public function updateEstado(Request $request, Ticket $ticket)
+    {
+        if ($request->user()->role === UserRole::Tecnico) {
+            abort_if($ticket->tecnico_id !== $request->user()->id, 403);
+        }
+
+        $data = $request->validate([
+            'estado' => ['required', 'in:aberto,em_analise,em_curso,aguarda_cliente,aguarda_peca,em_testes,resolvido,cancelado'],
+            'observacao' => ['nullable', 'string'],
+            'observacao_visivel_cliente' => ['boolean'],
+        ]);
+
+        $evento = $ticket->mudarEstado(
+            $request->user(),
+            TicketEstado::from($data['estado']),
+            $data['observacao'] ?? null,
+            $data['observacao_visivel_cliente'] ?? false,
+        );
+
+        return response()->json(['ticket' => $ticket->fresh(), 'evento' => $evento]);
+    }
+
+    public function show(Request $request, Ticket $ticket)
+    {
+        $cliente = $request->user()->cliente;
+        abort_if($cliente === null || $ticket->cliente_id !== $cliente->id, 403);
+
+        $eventos = $ticket->eventos()->orderBy('created_at')->get()->map(fn ($evento) => [
+            'estado_anterior' => $evento->estado_anterior->value,
+            'estado_novo' => $evento->estado_novo->value,
+            'observacao' => $evento->observacao_visivel_cliente ? $evento->observacao : null,
+            'created_at' => $evento->created_at,
+        ]);
+
+        $ticketArray = $ticket->toArray();
+        $ticketArray['eventos'] = $eventos;
+
+        return response()->json(['ticket' => $ticketArray]);
+    }
 }

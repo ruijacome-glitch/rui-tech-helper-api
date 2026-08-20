@@ -16,13 +16,16 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::get('/ping', fn () => response()->json(['ok' => true]));
     Route::post('/clientes', [\App\Http\Controllers\Admin\ClienteController::class, 'store']);
     Route::post('/tickets', [\App\Http\Controllers\Tickets\TicketController::class, 'store']);
+    Route::patch('/tickets/{ticket}/estado', [\App\Http\Controllers\Tickets\TicketController::class, 'updateEstado']);
 });
 
 Route::middleware(['auth:sanctum', 'role:tecnico'])->prefix('tecnico')->group(function () {
     Route::get('/ping', fn () => response()->json(['ok' => true]));
+    Route::patch('/tickets/{ticket}/estado', [\App\Http\Controllers\Tickets\TicketController::class, 'updateEstado']);
 });
 
 Route::middleware(['auth:sanctum', 'role:cliente'])->prefix('cliente')->group(function () {
     Route::get('/ping', fn () => response()->json(['ok' => true]));
     Route::post('/tickets', [\App\Http\Controllers\Tickets\TicketController::class, 'storeCliente']);
+    Route::get('/tickets/{ticket}', [\App\Http\Controllers\Tickets\TicketController::class, 'show']);
 });
