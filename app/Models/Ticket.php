@@ -1,0 +1,68 @@
+<?php
+
+namespace App\Models;
+
+use App\Enums\TicketCategoria;
+use App\Enums\TicketEstado;
+use App\Enums\TicketOrigem;
+use App\Enums\TicketPrioridade;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Ticket extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'cliente_id',
+        'tecnico_id',
+        'categoria',
+        'prioridade',
+        'estado',
+        'origem',
+        'titulo',
+        'descricao',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'categoria' => TicketCategoria::class,
+            'prioridade' => TicketPrioridade::class,
+            'estado' => TicketEstado::class,
+            'origem' => TicketOrigem::class,
+        ];
+    }
+
+    public function cliente(): BelongsTo
+    {
+        return $this->belongsTo(Cliente::class);
+    }
+
+    public function tecnico(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'tecnico_id');
+    }
+
+    public function eventos(): HasMany
+    {
+        return $this->hasMany(TicketEvento::class);
+    }
+
+    public function anexos(): HasMany
+    {
+        return $this->hasMany(TicketAnexo::class);
+    }
+
+    public function orcamentos(): HasMany
+    {
+        return $this->hasMany(Orcamento::class);
+    }
+
+    public function equipamentoRegistos(): HasMany
+    {
+        return $this->hasMany(EquipamentoRegisto::class);
+    }
+}
