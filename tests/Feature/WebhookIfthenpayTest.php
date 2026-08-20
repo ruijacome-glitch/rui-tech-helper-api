@@ -56,6 +56,35 @@ test('callback sem match e sem requestid nao apanha pagamento errado', function 
     expect($orcamento2->pagamento->fresh()->estado->value)->toBe('pendente');
 });
 
+test('callback e rejeitado quando chave anti-phishing nao esta configurada mesmo sem chave no pedido', function () {
+    config(['services.ifthenpay.antiphishing_key' => null]);
+    [, $orcamento] = criarOrcamentoAprovadoComPagamento();
+    $pagamento = $orcamento->pagamento;
+    $pagamento->update(['referencia' => '999888777']);
+
+    $response = $this->postJson('/api/webhooks/ifthenpay', [
+        'referencia' => '999888777',
+    ]);
+
+    $response->assertStatus(403);
+    expect($pagamento->fresh()->estado->value)->toBe('pendente');
+});
+
+test('callback e rejeitado quando chave anti-phishing nao esta configurada mesmo com chave null no pedido', function () {
+    config(['services.ifthenpay.antiphishing_key' => null]);
+    [, $orcamento] = criarOrcamentoAprovadoComPagamento();
+    $pagamento = $orcamento->pagamento;
+    $pagamento->update(['referencia' => '999888777']);
+
+    $response = $this->postJson('/api/webhooks/ifthenpay', [
+        'chave' => null,
+        'referencia' => '999888777',
+    ]);
+
+    $response->assertStatus(403);
+    expect($pagamento->fresh()->estado->value)->toBe('pendente');
+});
+
 test('callback duplicado em pagamento ja pago e no-op', function () {
     config(['services.ifthenpay.antiphishing_key' => 'chave-secreta']);
     Bus::fake();
