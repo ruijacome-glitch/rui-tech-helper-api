@@ -10,6 +10,7 @@ use App\Models\Orcamento;
 use App\Models\Pagamento;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class OrcamentoController extends Controller
@@ -50,7 +51,6 @@ class OrcamentoController extends Controller
     {
         $cliente = $request->user()->cliente;
         abort_if($cliente === null || $orcamento->ticket->cliente_id !== $cliente->id, 403);
-        abort_if($orcamento->estado->value !== 'pendente', 409, 'Orcamento ja foi decidido.');
 
         $data = $request->validate([
             'decisao' => ['required', 'in:aprovado,rejeitado'],
@@ -60,18 +60,25 @@ class OrcamentoController extends Controller
             abort_if(empty($cliente->nif), 422, 'Complete o NIF no seu perfil antes de aceitar o orcamento.');
         }
 
-        $orcamento->update([
-            'estado' => $data['decisao'],
-            'decided_at' => now(),
-        ]);
+        $orcamento = DB::transaction(function () use ($orcamento, $data) {
+            $locked = Orcamento::whereKey($orcamento->id)->lockForUpdate()->firstOrFail();
+            abort_if($locked->estado->value !== 'pendente', 409, 'Orcamento ja foi decidido.');
 
-        if ($data['decisao'] === 'aprovado') {
-            Pagamento::create([
-                'orcamento_id' => $orcamento->id,
-                'estado' => PagamentoEstado::Pendente,
-                'valor' => $orcamento->fresh('itens')->total(),
+            $locked->update([
+                'estado' => $data['decisao'],
+                'decided_at' => now(),
             ]);
-        }
+
+            if ($data['decisao'] === 'aprovado') {
+                Pagamento::create([
+                    'orcamento_id' => $locked->id,
+                    'estado' => PagamentoEstado::Pendente,
+                    'valor' => $locked->fresh('itens')->total(),
+                ]);
+            }
+
+            return $locked;
+        });
 
         return response()->json(['orcamento' => $orcamento->fresh()]);
     }
