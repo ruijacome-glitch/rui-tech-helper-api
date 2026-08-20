@@ -17,7 +17,7 @@ class WebhookController extends Controller
         abort_if($request->input('chave') !== config('services.ifthenpay.antiphishing_key'), 403);
 
         $pagamento = Pagamento::where('referencia', $request->input('referencia'))
-            ->orWhere('ifthenpay_request_id', $request->input('requestid'))
+            ->when($request->filled('requestid'), fn ($query) => $query->orWhere('ifthenpay_request_id', $request->input('requestid')))
             ->first();
 
         abort_if($pagamento === null, 404);
