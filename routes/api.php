@@ -19,6 +19,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::patch('/tickets/{ticket}/estado', [\App\Http\Controllers\Tickets\TicketController::class, 'updateEstado']);
     Route::post('/tickets/{ticket}/orcamentos', [\App\Http\Controllers\Tickets\OrcamentoController::class, 'store']);
     Route::post('/tickets/{ticket}/equipamento', [\App\Http\Controllers\Tickets\EquipamentoRegistoController::class, 'store']);
+    Route::post('/tickets/{ticket}/anexos', [\App\Http\Controllers\Tickets\AnexoController::class, 'store']);
 });
 
 Route::middleware(['auth:sanctum', 'role:tecnico'])->prefix('tecnico')->group(function () {
@@ -26,6 +27,7 @@ Route::middleware(['auth:sanctum', 'role:tecnico'])->prefix('tecnico')->group(fu
     Route::patch('/tickets/{ticket}/estado', [\App\Http\Controllers\Tickets\TicketController::class, 'updateEstado']);
     Route::post('/tickets/{ticket}/orcamentos', [\App\Http\Controllers\Tickets\OrcamentoController::class, 'store']);
     Route::post('/tickets/{ticket}/equipamento', [\App\Http\Controllers\Tickets\EquipamentoRegistoController::class, 'store']);
+    Route::post('/tickets/{ticket}/anexos', [\App\Http\Controllers\Tickets\AnexoController::class, 'store']);
 });
 
 Route::middleware(['auth:sanctum', 'role:cliente'])->prefix('cliente')->group(function () {
