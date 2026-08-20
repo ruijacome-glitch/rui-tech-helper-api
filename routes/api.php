@@ -18,12 +18,14 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/tickets', [\App\Http\Controllers\Tickets\TicketController::class, 'store']);
     Route::patch('/tickets/{ticket}/estado', [\App\Http\Controllers\Tickets\TicketController::class, 'updateEstado']);
     Route::post('/tickets/{ticket}/orcamentos', [\App\Http\Controllers\Tickets\OrcamentoController::class, 'store']);
+    Route::post('/tickets/{ticket}/equipamento', [\App\Http\Controllers\Tickets\EquipamentoRegistoController::class, 'store']);
 });
 
 Route::middleware(['auth:sanctum', 'role:tecnico'])->prefix('tecnico')->group(function () {
     Route::get('/ping', fn () => response()->json(['ok' => true]));
     Route::patch('/tickets/{ticket}/estado', [\App\Http\Controllers\Tickets\TicketController::class, 'updateEstado']);
     Route::post('/tickets/{ticket}/orcamentos', [\App\Http\Controllers\Tickets\OrcamentoController::class, 'store']);
+    Route::post('/tickets/{ticket}/equipamento', [\App\Http\Controllers\Tickets\EquipamentoRegistoController::class, 'store']);
 });
 
 Route::middleware(['auth:sanctum', 'role:cliente'])->prefix('cliente')->group(function () {
