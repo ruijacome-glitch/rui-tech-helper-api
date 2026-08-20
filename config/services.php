@@ -37,4 +37,17 @@ return [
         ],
     ],
 
+    'ifthenpay' => [
+        'mb_key' => env('IFTHENPAY_MB_KEY'),
+        'mbway_key' => env('IFTHENPAY_MBWAY_KEY'),
+        'antiphishing_key' => env('IFTHENPAY_ANTIPHISHING_KEY'),
+    ],
+
+    'moloni' => [
+        'client_id' => env('MOLONI_CLIENT_ID'),
+        'client_secret' => env('MOLONI_CLIENT_SECRET'),
+        'company_id' => env('MOLONI_COMPANY_ID'),
+        'iva_tax_id' => env('MOLONI_IVA_TAX_ID'),
+    ],
+
 ];
