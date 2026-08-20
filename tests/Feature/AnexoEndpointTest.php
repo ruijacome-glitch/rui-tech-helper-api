@@ -59,6 +59,19 @@ test('ficheiro demasiado grande devolve 422', function () {
     $response->assertStatus(422);
 });
 
+test('ficheiro com tipo nao suportado devolve 422', function () {
+    Storage::fake('local');
+    $tecnico = User::factory()->create(['role' => 'tecnico']);
+    $ticket = criarTicketComTecnicoParaAnexo($tecnico);
+    $file = UploadedFile::fake()->create('notas.txt', 10, 'text/plain');
+
+    $response = $this->actingAs($tecnico)->postJson("/api/tecnico/tickets/{$ticket->id}/anexos", [
+        'ficheiro' => $file,
+    ]);
+
+    $response->assertStatus(422);
+});
+
 test('tecnico nao atribuido nao pode fazer upload', function () {
     Storage::fake('local');
     $tecnico = User::factory()->create(['role' => 'tecnico']);

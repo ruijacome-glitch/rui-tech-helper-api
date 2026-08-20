@@ -28,7 +28,7 @@ class AnexoController extends Controller
             'user_id' => $request->user()->id,
             'path' => $path,
             'nome_original' => $file->getClientOriginalName(),
-            'content_type' => $file->getClientMimeType(),
+            'content_type' => $file->getMimeType(),
             'size' => $file->getSize(),
         ]);
 
