@@ -15,6 +15,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/ping', fn () => response()->json(['ok' => true]));
     Route::post('/clientes', [\App\Http\Controllers\Admin\ClienteController::class, 'store']);
+    Route::post('/tickets', [\App\Http\Controllers\Tickets\TicketController::class, 'store']);
 });
 
 Route::middleware(['auth:sanctum', 'role:tecnico'])->prefix('tecnico')->group(function () {
@@ -23,4 +24,5 @@ Route::middleware(['auth:sanctum', 'role:tecnico'])->prefix('tecnico')->group(fu
 
 Route::middleware(['auth:sanctum', 'role:cliente'])->prefix('cliente')->group(function () {
     Route::get('/ping', fn () => response()->json(['ok' => true]));
+    Route::post('/tickets', [\App\Http\Controllers\Tickets\TicketController::class, 'storeCliente']);
 });
