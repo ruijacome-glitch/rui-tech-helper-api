@@ -59,16 +59,21 @@ class PagamentoController extends Controller
     {
         $pagamento = $orcamento->pagamento;
         abort_if($pagamento === null, 409, 'Orcamento ainda nao foi aprovado.');
-        abort_if($pagamento->estado === PagamentoEstado::Pago, 409, 'Pagamento ja confirmado.');
 
-        $pagamento->update([
-            'estado' => PagamentoEstado::Pago,
-            'origem' => PagamentoOrigem::Manual,
-            'paid_at' => now(),
-        ]);
+        return DB::transaction(function () use ($pagamento) {
+            $locked = Pagamento::whereKey($pagamento->id)->lockForUpdate()->firstOrFail();
 
-        EmitirFacturaRecibo::dispatch($pagamento->fresh());
+            abort_if($locked->estado === PagamentoEstado::Pago, 409, 'Pagamento ja confirmado.');
 
-        return response()->json(['pagamento' => $pagamento->fresh()]);
+            $locked->update([
+                'estado' => PagamentoEstado::Pago,
+                'origem' => PagamentoOrigem::Manual,
+                'paid_at' => now(),
+            ]);
+
+            EmitirFacturaRecibo::dispatch($locked->fresh());
+
+            return response()->json(['pagamento' => $locked->fresh()]);
+        });
     }
 }
