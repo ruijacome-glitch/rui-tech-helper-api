@@ -22,6 +22,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/tickets/{ticket}/orcamentos', [\App\Http\Controllers\Tickets\OrcamentoController::class, 'store']);
     Route::post('/tickets/{ticket}/equipamento', [\App\Http\Controllers\Tickets\EquipamentoRegistoController::class, 'store']);
     Route::post('/tickets/{ticket}/anexos', [\App\Http\Controllers\Tickets\AnexoController::class, 'store']);
+    Route::post('/orcamentos/{orcamento}/pagamento/marcar-pago', [\App\Http\Controllers\Tickets\PagamentoController::class, 'marcarPago']);
 });
 
 Route::middleware(['auth:sanctum', 'role:tecnico'])->prefix('tecnico')->group(function () {
