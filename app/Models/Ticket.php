@@ -6,10 +6,12 @@ use App\Enums\TicketCategoria;
 use App\Enums\TicketEstado;
 use App\Enums\TicketOrigem;
 use App\Enums\TicketPrioridade;
+use App\Mail\TicketEstadoAlterado;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Mail;
 
 class Ticket extends Model
 {
@@ -77,6 +79,10 @@ class Ticket extends Model
         ]);
 
         $this->update(['estado' => $novoEstado]);
+
+        if ($this->cliente->email) {
+            Mail::to($this->cliente->email)->send(new TicketEstadoAlterado($evento));
+        }
 
         return $evento;
     }
