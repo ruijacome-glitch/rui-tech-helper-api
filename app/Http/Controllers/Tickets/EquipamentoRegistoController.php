@@ -21,7 +21,7 @@ class EquipamentoRegistoController extends Controller
         $data = $request->validate([
             'tipo' => ['required', 'in:entrega,devolucao'],
             'nome_assinante' => ['required', 'string', 'max:255'],
-            'assinatura' => ['required', 'string', 'starts_with:data:image/png;base64,'],
+            'assinatura' => ['required', 'string', 'starts_with:data:image/png;base64,', 'max:2000000'],
             'observacoes' => ['nullable', 'string'],
         ]);
 
@@ -32,8 +32,11 @@ class EquipamentoRegistoController extends Controller
         );
 
         $base64 = substr($data['assinatura'], strlen('data:image/png;base64,'));
+        $decoded = base64_decode($base64, true);
+        abort_if($decoded === false || ! str_starts_with($decoded, "\x89PNG\r\n\x1a\n"), 422, 'Assinatura invalida.');
+
         $filename = "assinaturas/{$ticket->id}-{$data['tipo']}-" . Str::random(8) . '.png';
-        Storage::disk('local')->put($filename, base64_decode($base64));
+        abort_unless(Storage::disk('local')->put($filename, $decoded), 500, 'Falha ao guardar assinatura.');
 
         $registo = EquipamentoRegisto::create([
             'ticket_id' => $ticket->id,

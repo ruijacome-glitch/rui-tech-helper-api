@@ -102,3 +102,31 @@ test('tecnico nao atribuido nao pode registar equipamento', function () {
 
     $response->assertStatus(403);
 });
+
+test('assinatura com conteudo invalido (nao PNG) e rejeitada', function () {
+    Storage::fake('local');
+    $tecnico = User::factory()->create(['role' => 'tecnico']);
+    $ticket = criarTicketComTecnicoParaEquip($tecnico);
+
+    $response = $this->actingAs($tecnico)->postJson("/api/tecnico/tickets/{$ticket->id}/equipamento", [
+        'tipo' => 'entrega',
+        'nome_assinante' => 'Cliente Teste',
+        'assinatura' => 'data:image/png;base64,' . base64_encode('not a png'),
+    ]);
+
+    $response->assertStatus(422);
+});
+
+test('assinatura sem o prefixo obrigatorio e rejeitada', function () {
+    Storage::fake('local');
+    $tecnico = User::factory()->create(['role' => 'tecnico']);
+    $ticket = criarTicketComTecnicoParaEquip($tecnico);
+
+    $response = $this->actingAs($tecnico)->postJson("/api/tecnico/tickets/{$ticket->id}/equipamento", [
+        'tipo' => 'entrega',
+        'nome_assinante' => 'Cliente Teste',
+        'assinatura' => 'nao-e-um-data-uri-valido',
+    ]);
+
+    $response->assertStatus(422);
+});
