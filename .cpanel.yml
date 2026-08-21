@@ -6,5 +6,6 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/mercadom/rui-tech-helper-api-app/
-    - rsync -av --exclude='.env' --exclude='.git' --exclude='storage/app' --exclude='storage/logs' ./ $DEPLOYPATH
+    - /bin/mkdir -p $DEPLOYPATH
+    - tar --exclude='.env' --exclude='.git' --exclude='storage/app' --exclude='storage/logs' -cf - . | (cd $DEPLOYPATH && tar -xf -)
     - /usr/local/bin/php -r "if (!file_exists('{$DEPLOYPATH}.env')) { echo 'AVISO: .env em falta em produção, criar manualmente.'; }"
