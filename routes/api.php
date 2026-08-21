@@ -9,6 +9,8 @@ Route::post('/convites/{token}/completar', [\App\Http\Controllers\Public\Convite
 
 Route::post('/webhooks/ifthenpay', [\App\Http\Controllers\Public\WebhookController::class, 'ifthenpay']);
 
+Route::get('/public/conteudo-site', [\App\Http\Controllers\Public\ConteudoSiteController::class, 'index']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [SessionController::class, 'me']);
     Route::post('/logout', [SessionController::class, 'destroy']);
