@@ -29,6 +29,7 @@ class ConteudoAdminController extends Controller
             'testemunho.citacao' => ['required', 'string'],
             'testemunho.atribuicao' => ['required', 'string', 'max:255'],
             'precos' => ['array'],
+            'precos.*.titulo' => ['nullable', 'string', 'max:255'],
             'precos.*.valor' => ['required', 'string', 'max:255'],
             'precos.*.nota' => ['nullable', 'string'],
         ]);
@@ -38,6 +39,7 @@ class ConteudoAdminController extends Controller
 
         foreach ($validated['precos'] ?? [] as $id => $data) {
             Preco::whereKey($id)->update([
+                'titulo' => $data['titulo'] ?? null,
                 'valor' => $data['valor'],
                 'nota' => $data['nota'] ?? null,
             ]);

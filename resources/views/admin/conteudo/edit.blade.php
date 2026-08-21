@@ -53,6 +53,7 @@
                     <tr>
                         <th>Secção</th>
                         <th>Serviço</th>
+                        <th>Título</th>
                         <th>Valor</th>
                         <th>Nota</th>
                     </tr>
@@ -62,6 +63,10 @@
                         <tr>
                             <td>{{ $preco->secao->value }}</td>
                             <td>{{ $preco->servico }}</td>
+                            <td>
+                                <input type="text" name="precos[{{ $preco->id }}][titulo]" value="{{ old('precos.'.$preco->id.'.titulo', $preco->titulo) }}">
+                                @error('precos.'.$preco->id.'.titulo')<div class="admin-field-error">{{ $message }}</div>@enderror
+                            </td>
                             <td>
                                 <input type="text" name="precos[{{ $preco->id }}][valor]" value="{{ old('precos.'.$preco->id.'.valor', $preco->valor) }}">
                                 @error('precos.'.$preco->id.'.valor')<div class="admin-field-error">{{ $message }}</div>@enderror

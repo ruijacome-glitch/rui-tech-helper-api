@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Preco extends Model
 {
-    protected $fillable = ['secao', 'servico', 'valor', 'nota', 'ordem'];
+    protected $fillable = ['secao', 'servico', 'titulo', 'valor', 'nota', 'ordem'];
 
     protected function casts(): array
     {

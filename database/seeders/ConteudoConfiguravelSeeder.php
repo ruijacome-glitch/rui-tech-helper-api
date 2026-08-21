@@ -36,7 +36,7 @@ class ConteudoConfiguravelSeeder extends Seeder
         foreach ($precosHome as $item) {
             Preco::updateOrCreate(
                 ['secao' => 'home', 'servico' => $item['servico']],
-                ['valor' => $item['valor'], 'nota' => $item['nota'], 'ordem' => $item['ordem']]
+                ['titulo' => $item['servico'], 'valor' => $item['valor'], 'nota' => $item['nota'], 'ordem' => $item['ordem']]
             );
         }
 
@@ -50,7 +50,7 @@ class ConteudoConfiguravelSeeder extends Seeder
         foreach ($precarioAreas as $item) {
             Preco::updateOrCreate(
                 ['secao' => 'precario', 'servico' => $item['servico']],
-                ['valor' => $item['valor'], 'nota' => $item['nota'], 'ordem' => $item['ordem']]
+                ['titulo' => $item['servico'], 'valor' => $item['valor'], 'nota' => $item['nota'], 'ordem' => $item['ordem']]
             );
         }
     }

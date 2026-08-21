@@ -24,9 +24,10 @@ class ConteudoSiteController extends Controller
     {
         return Preco::where('secao', $secao)
             ->orderBy('ordem')
-            ->get(['servico', 'valor', 'nota'])
+            ->get(['servico', 'titulo', 'valor', 'nota'])
             ->map(fn (Preco $preco) => [
                 'servico' => $preco->servico,
+                'titulo' => $preco->titulo ?? $preco->servico,
                 'valor' => $preco->valor,
                 'nota' => $preco->nota,
             ])
