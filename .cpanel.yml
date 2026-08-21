@@ -7,6 +7,6 @@ deployment:
   tasks:
     - export DEPLOYPATH=/home/mercadom/rui-tech-helper-api-app/
     - /bin/mkdir -p $DEPLOYPATH
-    - /bin/chmod 755 $DEPLOYPATH
     - tar --exclude='.env' --exclude='.git' --exclude='storage/app' --exclude='storage/logs' -cf - . | (cd $DEPLOYPATH && tar -xf -)
+    - /bin/chmod 755 $DEPLOYPATH
     - /usr/local/bin/php -r "file_exists(getenv('DEPLOYPATH').'.env') or print('AVISO - .env em falta em producao, criar manualmente.');"
