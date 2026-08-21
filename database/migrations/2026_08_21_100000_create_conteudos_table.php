@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('conteudos', function (Blueprint $table) {
-            $table->string('chave')->primary();
+            $table->string('chave', 100)->primary();
             $table->json('valor');
             $table->timestamps();
         });
