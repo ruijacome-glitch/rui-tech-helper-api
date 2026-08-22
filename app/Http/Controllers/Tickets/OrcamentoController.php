@@ -12,6 +12,7 @@ use App\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class OrcamentoController extends Controller
 {
@@ -81,5 +82,41 @@ class OrcamentoController extends Controller
         });
 
         return response()->json(['orcamento' => $orcamento->fresh()]);
+    }
+
+    public function indexAdmin(Request $request)
+    {
+        $data = $request->validate([
+            'estado' => ['nullable', Rule::enum(\App\Enums\OrcamentoEstado::class)],
+        ]);
+
+        $orcamentos = Orcamento::query()
+            ->with(['itens', 'ticket:id,titulo,cliente_id'])
+            ->when($data['estado'] ?? null, fn ($q, $v) => $q->where('estado', $v))
+            ->latest()
+            ->paginate(20);
+
+        return response()->json([
+            'data' => $orcamentos->getCollection()->map(fn (Orcamento $o) => [
+                'id' => $o->id,
+                'versao' => $o->versao,
+                'estado' => $o->estado->value,
+                'created_at' => $o->created_at,
+                'ticket' => [
+                    'id' => $o->ticket->id,
+                    'titulo' => $o->ticket->titulo,
+                ],
+                'itens' => $o->itens->map(fn ($item) => [
+                    'descricao' => $item->descricao,
+                    'quantidade' => $item->quantidade,
+                    'preco_unitario' => $item->preco_unitario,
+                ]),
+            ])->all(),
+            'meta' => [
+                'current_page' => $orcamentos->currentPage(),
+                'last_page' => $orcamentos->lastPage(),
+                'total' => $orcamentos->total(),
+            ],
+        ]);
     }
 }
