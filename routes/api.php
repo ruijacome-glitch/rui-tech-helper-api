@@ -20,6 +20,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::get('/ping', fn () => response()->json(['ok' => true]));
     Route::post('/clientes', [\App\Http\Controllers\Admin\ClienteController::class, 'store']);
     Route::post('/tickets', [\App\Http\Controllers\Tickets\TicketController::class, 'store']);
+    Route::get('/tickets', [\App\Http\Controllers\Tickets\TicketController::class, 'indexAdmin']);
     Route::patch('/tickets/{ticket}/estado', [\App\Http\Controllers\Tickets\TicketController::class, 'updateEstado']);
     Route::post('/tickets/{ticket}/orcamentos', [\App\Http\Controllers\Tickets\OrcamentoController::class, 'store']);
     Route::post('/tickets/{ticket}/equipamento', [\App\Http\Controllers\Tickets\EquipamentoRegistoController::class, 'store']);
@@ -29,6 +30,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 
 Route::middleware(['auth:sanctum', 'role:tecnico'])->prefix('tecnico')->group(function () {
     Route::get('/ping', fn () => response()->json(['ok' => true]));
+    Route::get('/tickets', [\App\Http\Controllers\Tickets\TicketController::class, 'indexTecnico']);
     Route::patch('/tickets/{ticket}/estado', [\App\Http\Controllers\Tickets\TicketController::class, 'updateEstado']);
     Route::post('/tickets/{ticket}/orcamentos', [\App\Http\Controllers\Tickets\OrcamentoController::class, 'store']);
     Route::post('/tickets/{ticket}/equipamento', [\App\Http\Controllers\Tickets\EquipamentoRegistoController::class, 'store']);

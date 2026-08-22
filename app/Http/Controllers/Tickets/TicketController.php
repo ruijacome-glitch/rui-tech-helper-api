@@ -76,6 +76,66 @@ class TicketController extends Controller
         return response()->json(['ticket' => $ticket->fresh(), 'evento' => $evento]);
     }
 
+    public function indexAdmin(Request $request)
+    {
+        $data = $request->validate([
+            'estado' => ['nullable', Rule::enum(\App\Enums\TicketEstado::class)],
+            'categoria' => ['nullable', Rule::enum(\App\Enums\TicketCategoria::class)],
+            'prioridade' => ['nullable', Rule::enum(\App\Enums\TicketPrioridade::class)],
+            'tecnico_id' => ['nullable', Rule::exists('users', 'id')->where('role', UserRole::Tecnico->value)],
+        ]);
+
+        $tickets = Ticket::query()
+            ->when($data['estado'] ?? null, fn ($q, $v) => $q->where('estado', $v))
+            ->when($data['categoria'] ?? null, fn ($q, $v) => $q->where('categoria', $v))
+            ->when($data['prioridade'] ?? null, fn ($q, $v) => $q->where('prioridade', $v))
+            ->when($data['tecnico_id'] ?? null, fn ($q, $v) => $q->where('tecnico_id', $v))
+            ->latest()
+            ->paginate(20);
+
+        return response()->json($this->serializeTicketPage($tickets));
+    }
+
+    public function indexTecnico(Request $request)
+    {
+        $data = $request->validate([
+            'estado' => ['nullable', Rule::enum(\App\Enums\TicketEstado::class)],
+            'categoria' => ['nullable', Rule::enum(\App\Enums\TicketCategoria::class)],
+            'prioridade' => ['nullable', Rule::enum(\App\Enums\TicketPrioridade::class)],
+        ]);
+
+        $tickets = Ticket::query()
+            ->where('tecnico_id', $request->user()->id)
+            ->when($data['estado'] ?? null, fn ($q, $v) => $q->where('estado', $v))
+            ->when($data['categoria'] ?? null, fn ($q, $v) => $q->where('categoria', $v))
+            ->when($data['prioridade'] ?? null, fn ($q, $v) => $q->where('prioridade', $v))
+            ->latest()
+            ->paginate(20);
+
+        return response()->json($this->serializeTicketPage($tickets));
+    }
+
+    private function serializeTicketPage(\Illuminate\Pagination\LengthAwarePaginator $tickets): array
+    {
+        return [
+            'data' => $tickets->getCollection()->map(fn (Ticket $t) => [
+                'id' => $t->id,
+                'titulo' => $t->titulo,
+                'estado' => $t->estado->value,
+                'categoria' => $t->categoria->value,
+                'prioridade' => $t->prioridade->value,
+                'cliente_id' => $t->cliente_id,
+                'tecnico_id' => $t->tecnico_id,
+                'created_at' => $t->created_at,
+            ])->all(),
+            'meta' => [
+                'current_page' => $tickets->currentPage(),
+                'last_page' => $tickets->lastPage(),
+                'total' => $tickets->total(),
+            ],
+        ];
+    }
+
     public function show(Request $request, Ticket $ticket)
     {
         $cliente = $request->user()->cliente;
