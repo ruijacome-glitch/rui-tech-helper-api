@@ -127,6 +127,17 @@ class TicketController extends Controller
         return response()->json(['ticket' => $this->serializeTicketDetail($ticket)]);
     }
 
+    public function atribuir(Request $request, Ticket $ticket)
+    {
+        $data = $request->validate([
+            'tecnico_id' => ['required', Rule::exists('users', 'id')->where('role', UserRole::Tecnico->value)],
+        ]);
+
+        $ticket->update(['tecnico_id' => $data['tecnico_id']]);
+
+        return response()->json(['ticket' => $ticket->fresh(['tecnico'])]);
+    }
+
     private function serializeTicketDetail(Ticket $ticket): array
     {
         $ticket->load(['cliente', 'tecnico', 'orcamentos.itens', 'orcamentos.pagamento']);

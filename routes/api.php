@@ -22,6 +22,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/tickets', [\App\Http\Controllers\Tickets\TicketController::class, 'store']);
     Route::get('/tickets', [\App\Http\Controllers\Tickets\TicketController::class, 'indexAdmin']);
     Route::get('/tickets/{ticket}', [\App\Http\Controllers\Tickets\TicketController::class, 'showAdmin']);
+    Route::patch('/tickets/{ticket}/atribuir', [\App\Http\Controllers\Tickets\TicketController::class, 'atribuir']);
     Route::patch('/tickets/{ticket}/estado', [\App\Http\Controllers\Tickets\TicketController::class, 'updateEstado']);
     Route::post('/tickets/{ticket}/orcamentos', [\App\Http\Controllers\Tickets\OrcamentoController::class, 'store']);
     Route::post('/tickets/{ticket}/equipamento', [\App\Http\Controllers\Tickets\EquipamentoRegistoController::class, 'store']);
