@@ -115,6 +115,73 @@ class TicketController extends Controller
         return response()->json($this->serializeTicketPage($tickets));
     }
 
+    public function showAdmin(Ticket $ticket)
+    {
+        return response()->json(['ticket' => $this->serializeTicketDetail($ticket)]);
+    }
+
+    public function showTecnico(Request $request, Ticket $ticket)
+    {
+        abort_if($ticket->tecnico_id !== $request->user()->id, 403);
+
+        return response()->json(['ticket' => $this->serializeTicketDetail($ticket)]);
+    }
+
+    private function serializeTicketDetail(Ticket $ticket): array
+    {
+        $ticket->load(['cliente', 'tecnico', 'orcamentos.itens', 'orcamentos.pagamento']);
+
+        return [
+            'id' => $ticket->id,
+            'titulo' => $ticket->titulo,
+            'descricao' => $ticket->descricao,
+            'estado' => $ticket->estado->value,
+            'categoria' => $ticket->categoria->value,
+            'prioridade' => $ticket->prioridade->value,
+            'created_at' => $ticket->created_at,
+            'cliente' => [
+                'id' => $ticket->cliente->id,
+                'nome' => $ticket->cliente->nome,
+                'email' => $ticket->cliente->email,
+                'telefone' => $ticket->cliente->telefone,
+            ],
+            'tecnico' => $ticket->tecnico ? [
+                'id' => $ticket->tecnico->id,
+                'name' => $ticket->tecnico->name,
+            ] : null,
+            'eventos' => $ticket->eventos()->orderByDesc('created_at')->get()->map(fn ($evento) => [
+                'estado_anterior' => $evento->estado_anterior->value,
+                'estado_novo' => $evento->estado_novo->value,
+                'observacao' => $evento->observacao,
+                'created_at' => $evento->created_at,
+            ]),
+            'anexos' => $ticket->anexos()->orderBy('created_at')->get()->map(fn ($anexo) => [
+                'id' => $anexo->id,
+                'nome_original' => $anexo->nome_original,
+                'content_type' => $anexo->content_type,
+                'size' => $anexo->size,
+                'created_at' => $anexo->created_at,
+            ]),
+            'orcamentos' => $ticket->orcamentos->map(fn (\App\Models\Orcamento $orcamento) => [
+                'id' => $orcamento->id,
+                'versao' => $orcamento->versao,
+                'estado' => $orcamento->estado->value,
+                'created_at' => $orcamento->created_at,
+                'decided_at' => $orcamento->decided_at,
+                'itens' => $orcamento->itens->map(fn ($item) => [
+                    'descricao' => $item->descricao,
+                    'quantidade' => $item->quantidade,
+                    'preco_unitario' => $item->preco_unitario,
+                ]),
+                'pagamento' => $orcamento->pagamento ? [
+                    'id' => $orcamento->pagamento->id,
+                    'estado' => $orcamento->pagamento->estado->value,
+                    'valor' => $orcamento->pagamento->valor,
+                ] : null,
+            ]),
+        ];
+    }
+
     private function serializeTicketPage(\Illuminate\Pagination\LengthAwarePaginator $tickets): array
     {
         return [
