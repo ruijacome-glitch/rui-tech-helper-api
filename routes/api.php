@@ -3,7 +3,7 @@
 use App\Http\Controllers\Auth\SessionController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/login', [SessionController::class, 'store']);
+Route::post('/login', [SessionController::class, 'store'])->middleware('throttle:5,1');
 
 Route::post('/convites/{token}/completar', [\App\Http\Controllers\Public\ConviteController::class, 'completar']);
 
