@@ -25,6 +25,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::patch('/tickets/{ticket}/atribuir', [\App\Http\Controllers\Tickets\TicketController::class, 'atribuir']);
     Route::get('/orcamentos', [\App\Http\Controllers\Tickets\OrcamentoController::class, 'indexAdmin']);
     Route::get('/pagamentos', [\App\Http\Controllers\Tickets\PagamentoController::class, 'indexAdmin']);
+    Route::get('/tecnicos', [\App\Http\Controllers\Admin\TecnicoController::class, 'index']);
     Route::patch('/tickets/{ticket}/estado', [\App\Http\Controllers\Tickets\TicketController::class, 'updateEstado']);
     Route::post('/tickets/{ticket}/orcamentos', [\App\Http\Controllers\Tickets\OrcamentoController::class, 'store']);
     Route::post('/tickets/{ticket}/equipamento', [\App\Http\Controllers\Tickets\EquipamentoRegistoController::class, 'store']);
