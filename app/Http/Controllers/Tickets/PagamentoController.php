@@ -11,6 +11,7 @@ use App\Models\Pagamento;
 use App\Services\IfthenPayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class PagamentoController extends Controller
 {
@@ -75,5 +76,42 @@ class PagamentoController extends Controller
 
             return response()->json(['pagamento' => $locked->fresh()]);
         });
+    }
+
+    public function indexAdmin(Request $request)
+    {
+        $data = $request->validate([
+            'estado' => ['nullable', Rule::enum(PagamentoEstado::class)],
+        ]);
+
+        $pagamentos = Pagamento::query()
+            ->with('orcamento.ticket:id,titulo,cliente_id')
+            ->when($data['estado'] ?? null, fn ($q, $v) => $q->where('estado', $v))
+            ->latest()
+            ->paginate(20);
+
+        return response()->json([
+            'data' => $pagamentos->getCollection()->map(fn (Pagamento $p) => [
+                'id' => $p->id,
+                'estado' => $p->estado->value,
+                'metodo' => $p->metodo?->value,
+                'valor' => $p->valor,
+                'paid_at' => $p->paid_at,
+                'created_at' => $p->created_at,
+                'orcamento' => [
+                    'id' => $p->orcamento->id,
+                    'versao' => $p->orcamento->versao,
+                    'ticket' => [
+                        'id' => $p->orcamento->ticket->id,
+                        'titulo' => $p->orcamento->ticket->titulo,
+                    ],
+                ],
+            ])->all(),
+            'meta' => [
+                'current_page' => $pagamentos->currentPage(),
+                'last_page' => $pagamentos->lastPage(),
+                'total' => $pagamentos->total(),
+            ],
+        ]);
     }
 }
