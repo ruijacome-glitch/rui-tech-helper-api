@@ -9,20 +9,25 @@ use App\Models\Cliente;
 use App\Models\Pagamento;
 use App\Models\Ticket;
 
-class DashboardController extends Controller
+final class DashboardController extends Controller
 {
-    public function index()
+    public function index(): \Illuminate\Http\JsonResponse
     {
         $inicioMes = now()->startOfMonth();
         $inicioSemana = now()->startOfWeek();
 
+        $contagensPorEstado = Ticket::query()
+            ->selectRaw('estado, count(*) as total')
+            ->groupBy('estado')
+            ->pluck('total', 'estado');
+
         $porEstado = collect(TicketEstado::cases())->mapWithKeys(
-            fn (TicketEstado $estado) => [$estado->value => Ticket::where('estado', $estado)->count()]
+            fn (TicketEstado $estado) => [$estado->value => $contagensPorEstado->get($estado->value, 0)]
         );
 
         $faturacaoMes = Pagamento::query()
             ->where('estado', PagamentoEstado::Pago)
-            ->where('created_at', '>=', $inicioMes)
+            ->where('paid_at', '>=', $inicioMes)
             ->sum('valor');
 
         $intervencoesRecentes = Ticket::with('cliente')
@@ -41,6 +46,7 @@ class DashboardController extends Controller
             ],
             'faturacao_mes' => number_format((float) $faturacaoMes, 2, '.', ''),
             'pendentes' => Ticket::whereNotIn('estado', [TicketEstado::Resolvido, TicketEstado::Cancelado])->count(),
+            // TODO: placeholder until agendamentos module exists
             'agendamentos' => ['total' => 0],
             'por_estado' => $porEstado,
             'intervencoes_recentes' => $intervencoesRecentes->map(fn (Ticket $t) => [
