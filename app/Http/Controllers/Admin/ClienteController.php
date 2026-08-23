@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Mail\ConviteCliente;
 use App\Models\Cliente;
 use App\Models\Convite;
+use App\Models\Orcamento;
+use App\Models\Pagamento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -69,5 +71,55 @@ class ClienteController extends Controller
         }
 
         return response()->json(['cliente' => $cliente], 201);
+    }
+
+    public function show(Cliente $cliente)
+    {
+        $cliente->load(['tickets' => fn ($q) => $q->latest()->limit(20)]);
+
+        $faturacaoTotal = Pagamento::query()
+            ->where('estado', 'pago')
+            ->whereHas('orcamento.ticket', fn ($q) => $q->where('cliente_id', $cliente->id))
+            ->sum('valor');
+
+        $orcamentos = Orcamento::query()
+            ->whereHas('ticket', fn ($q) => $q->where('cliente_id', $cliente->id))
+            ->with('itens')
+            ->latest('created_at')
+            ->limit(20)
+            ->get();
+
+        return response()->json([
+            'cliente' => [
+                'id' => $cliente->id,
+                'nome' => $cliente->nome,
+                'email' => $cliente->email,
+                'telefone' => $cliente->telefone,
+                'morada' => $cliente->morada,
+                'nif' => $cliente->nif,
+                'notas' => $cliente->notas,
+                'created_at' => $cliente->created_at,
+            ],
+            'resumo' => [
+                'intervencoes_total' => $cliente->tickets->count(),
+                'faturacao_total' => number_format((float) $faturacaoTotal, 2, '.', ''),
+                'ultima_intervencao_em' => $cliente->tickets->max('created_at'),
+            ],
+            'intervencoes' => $cliente->tickets->map(fn (\App\Models\Ticket $t) => [
+                'id' => $t->id,
+                'titulo' => $t->titulo,
+                'estado' => $t->estado->value,
+                'categoria' => $t->categoria->value,
+                'prioridade' => $t->prioridade->value,
+                'created_at' => $t->created_at,
+            ]),
+            'orcamentos' => $orcamentos->map(fn (Orcamento $o) => [
+                'id' => $o->id,
+                'ticket_id' => $o->ticket_id,
+                'valor_total' => number_format($o->total(), 2, '.', ''),
+                'estado' => $o->estado->value,
+                'created_at' => $o->created_at,
+            ]),
+        ]);
     }
 }
