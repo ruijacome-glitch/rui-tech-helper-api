@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\ConviteCliente;
+use App\Enums\PagamentoEstado;
 use App\Models\Cliente;
 use App\Models\Convite;
 use App\Models\Orcamento;
 use App\Models\Pagamento;
+use App\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -76,9 +78,10 @@ class ClienteController extends Controller
     public function show(Cliente $cliente)
     {
         $cliente->load(['tickets' => fn ($q) => $q->latest()->limit(20)]);
+        $cliente->loadCount('tickets');
 
         $faturacaoTotal = Pagamento::query()
-            ->where('estado', 'pago')
+            ->where('estado', PagamentoEstado::Pago)
             ->whereHas('orcamento.ticket', fn ($q) => $q->where('cliente_id', $cliente->id))
             ->sum('valor');
 
@@ -101,11 +104,11 @@ class ClienteController extends Controller
                 'created_at' => $cliente->created_at,
             ],
             'resumo' => [
-                'intervencoes_total' => $cliente->tickets->count(),
+                'intervencoes_total' => $cliente->tickets_count,
                 'faturacao_total' => number_format((float) $faturacaoTotal, 2, '.', ''),
                 'ultima_intervencao_em' => $cliente->tickets->max('created_at'),
             ],
-            'intervencoes' => $cliente->tickets->map(fn (\App\Models\Ticket $t) => [
+            'intervencoes' => $cliente->tickets->map(fn (Ticket $t) => [
                 'id' => $t->id,
                 'titulo' => $t->titulo,
                 'estado' => $t->estado->value,
