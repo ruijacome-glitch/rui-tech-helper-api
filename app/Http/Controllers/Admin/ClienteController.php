@@ -12,6 +12,41 @@ use Illuminate\Support\Str;
 
 class ClienteController extends Controller
 {
+    public function index(Request $request)
+    {
+        $data = $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $clientes = Cliente::query()
+            ->withCount('tickets')
+            ->when($data['search'] ?? null, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nome', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('telefone', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->paginate(20);
+
+        return response()->json([
+            'data' => $clientes->getCollection()->map(fn (Cliente $cliente) => [
+                'id' => $cliente->id,
+                'nome' => $cliente->nome,
+                'email' => $cliente->email,
+                'telefone' => $cliente->telefone,
+                'created_at' => $cliente->created_at,
+                'intervencoes_count' => $cliente->tickets_count,
+            ]),
+            'meta' => [
+                'current_page' => $clientes->currentPage(),
+                'last_page' => $clientes->lastPage(),
+                'total' => $clientes->total(),
+            ],
+        ]);
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([

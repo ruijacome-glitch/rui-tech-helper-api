@@ -19,6 +19,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/ping', fn () => response()->json(['ok' => true]));
     Route::post('/clientes', [\App\Http\Controllers\Admin\ClienteController::class, 'store']);
+    Route::get('/clientes', [\App\Http\Controllers\Admin\ClienteController::class, 'index']);
     Route::post('/tickets', [\App\Http\Controllers\Tickets\TicketController::class, 'store']);
     Route::get('/tickets', [\App\Http\Controllers\Tickets\TicketController::class, 'indexAdmin']);
     Route::get('/tickets/{ticket}', [\App\Http\Controllers\Tickets\TicketController::class, 'showAdmin']);
