@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use App\Enums\TicketCategoria;
 use App\Enums\TicketEstado;
