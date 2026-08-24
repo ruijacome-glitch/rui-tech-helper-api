@@ -11,6 +11,8 @@ Route::post('/webhooks/ifthenpay', [\App\Http\Controllers\Public\WebhookControll
 
 Route::get('/public/conteudo-site', [\App\Http\Controllers\Public\ConteudoSiteController::class, 'index']);
 
+Route::post('/public/contacto', [\App\Http\Controllers\Public\ContactoController::class, 'store'])->middleware('throttle:5,1');
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [SessionController::class, 'me']);
     Route::post('/logout', [SessionController::class, 'destroy']);
