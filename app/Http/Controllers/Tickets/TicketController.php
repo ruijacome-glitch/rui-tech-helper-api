@@ -219,6 +219,11 @@ class TicketController extends Controller
         $cliente = $request->user()->cliente;
         abort_if($cliente === null || $ticket->cliente_id !== $cliente->id, 403);
 
+        return response()->json(['ticket' => $this->serializeTicketDetailCliente($ticket)]);
+    }
+
+    public function serializeTicketDetailCliente(Ticket $ticket): array
+    {
         $eventos = $ticket->eventos()->orderBy('created_at')->get()->map(fn ($evento) => [
             'estado_anterior' => $evento->estado_anterior->value,
             'estado_novo' => $evento->estado_novo->value,
@@ -253,6 +258,6 @@ class TicketController extends Controller
         $ticketArray['anexos'] = $anexos;
         $ticketArray['orcamentos'] = $orcamentos;
 
-        return response()->json(['ticket' => $ticketArray]);
+        return $ticketArray;
     }
 }

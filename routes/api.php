@@ -13,6 +13,10 @@ Route::get('/public/conteudo-site', [\App\Http\Controllers\Public\ConteudoSiteCo
 
 Route::post('/public/contacto', [\App\Http\Controllers\Public\ContactoController::class, 'store'])->middleware('throttle:5,1');
 
+Route::prefix('public/tracking')->middleware('throttle:20,1')->group(function () {
+    Route::get('/{token}', [\App\Http\Controllers\Public\TrackingController::class, 'show']);
+});
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [SessionController::class, 'me']);
     Route::post('/logout', [SessionController::class, 'destroy']);
