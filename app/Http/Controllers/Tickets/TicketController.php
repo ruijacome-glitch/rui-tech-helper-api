@@ -263,7 +263,6 @@ class TicketController extends Controller
             'descricao' => $issue->descricao,
             'resultado' => $issue->resultado,
             'observacao' => $issue->observacao,
-            'resolvido_por_user_id' => $issue->resolvido_por_user_id,
             'resolvido_at' => $issue->resolvido_at,
         ]);
 
@@ -276,7 +275,6 @@ class TicketController extends Controller
                 'item_chave' => $itemChave,
                 'label' => $label,
                 'concluido' => $resposta?->concluido ?? false,
-                'concluido_por_user_id' => $resposta?->concluido_por_user_id,
                 'concluido_at' => $resposta?->concluido_at,
             ];
         })->values();
