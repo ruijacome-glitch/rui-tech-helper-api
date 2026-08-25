@@ -149,19 +149,7 @@ class TicketController extends Controller
             'checklistRespostas.concluidoPor',
         ]);
 
-        $itensCategoria = config('checklists')[$ticket->categoria->value] ?? [];
-        $respostas = $ticket->checklistRespostas->keyBy('item_chave');
-        $checklist = collect($itensCategoria)->map(function ($label, $itemChave) use ($respostas) {
-            $resposta = $respostas->get($itemChave);
-
-            return [
-                'item_chave' => $itemChave,
-                'label' => $label,
-                'concluido' => $resposta?->concluido ?? false,
-                'concluido_por' => $resposta?->concluidoPor?->name,
-                'concluido_at' => $resposta?->concluido_at,
-            ];
-        })->values();
+        $checklist = $this->buildChecklist($ticket, comIdentidade: true);
 
         return [
             'id' => $ticket->id,
@@ -222,6 +210,36 @@ class TicketController extends Controller
             ]),
             'checklist' => $checklist,
         ];
+    }
+
+    private function buildChecklist(Ticket $ticket, bool $comIdentidade): \Illuminate\Support\Collection
+    {
+        $itensCategoria = config('checklists')[$ticket->categoria->value] ?? [];
+
+        // Usar a colecao ja carregada quando a relacao foi eager-loaded (caso staff);
+        // caso contrario, consultar sem cachear na relacao para nao "vazar" a relacao
+        // crua para dentro de $ticket->toArray() (usado pelo serializer de cliente/publico).
+        $respostas = ($ticket->relationLoaded('checklistRespostas')
+            ? $ticket->checklistRespostas
+            : $ticket->checklistRespostas()->get())->keyBy('item_chave');
+
+        return collect($itensCategoria)->map(function ($label, $itemChave) use ($respostas, $comIdentidade) {
+            $resposta = $respostas->get($itemChave);
+
+            $item = [
+                'item_chave' => $itemChave,
+                'label' => $label,
+                'concluido' => $resposta?->concluido ?? false,
+            ];
+
+            if ($comIdentidade) {
+                $item['concluido_por'] = $resposta?->concluidoPor?->name;
+            }
+
+            $item['concluido_at'] = $resposta?->concluido_at;
+
+            return $item;
+        })->values();
     }
 
     private function serializeTicketPage(\Illuminate\Pagination\LengthAwarePaginator $tickets): array
@@ -297,18 +315,7 @@ class TicketController extends Controller
             'resolvido_at' => $issue->resolvido_at,
         ]);
 
-        $itensCategoria = config('checklists')[$ticket->categoria->value] ?? [];
-        $respostas = $ticket->checklistRespostas()->get()->keyBy('item_chave');
-        $checklist = collect($itensCategoria)->map(function ($label, $itemChave) use ($respostas) {
-            $resposta = $respostas->get($itemChave);
-
-            return [
-                'item_chave' => $itemChave,
-                'label' => $label,
-                'concluido' => $resposta?->concluido ?? false,
-                'concluido_at' => $resposta?->concluido_at,
-            ];
-        })->values();
+        $checklist = $this->buildChecklist($ticket, comIdentidade: false);
 
         $ticketArray = $ticket->toArray();
         unset($ticketArray['tecnico_id']);
