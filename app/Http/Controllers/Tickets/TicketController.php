@@ -239,7 +239,7 @@ class TicketController extends Controller
             'created_at' => $anexo->created_at,
         ]);
 
-        $orcamentos = $ticket->orcamentos()->with('itens')->orderBy('versao')->get()->map(fn ($orcamento) => [
+        $orcamentos = $ticket->orcamentos()->with(['itens', 'pagamento'])->orderBy('versao')->get()->map(fn ($orcamento) => [
             'id' => $orcamento->id,
             'versao' => $orcamento->versao,
             'estado' => $orcamento->estado->value,
@@ -251,12 +251,42 @@ class TicketController extends Controller
                 'preco_unitario' => $item->preco_unitario,
             ]),
             'total' => $orcamento->total(),
+            'pagamento' => $orcamento->pagamento ? [
+                'id' => $orcamento->pagamento->id,
+                'estado' => $orcamento->pagamento->estado->value,
+                'valor' => $orcamento->pagamento->valor,
+            ] : null,
         ]);
+
+        $issues = $ticket->issues()->orderBy('created_at')->get()->map(fn ($issue) => [
+            'id' => $issue->id,
+            'descricao' => $issue->descricao,
+            'resultado' => $issue->resultado,
+            'observacao' => $issue->observacao,
+            'resolvido_por_user_id' => $issue->resolvido_por_user_id,
+            'resolvido_at' => $issue->resolvido_at,
+        ]);
+
+        $itensCategoria = config('checklists')[$ticket->categoria->value] ?? [];
+        $respostas = $ticket->checklistRespostas()->get()->keyBy('item_chave');
+        $checklist = collect($itensCategoria)->map(function ($label, $itemChave) use ($respostas) {
+            $resposta = $respostas->get($itemChave);
+
+            return [
+                'item_chave' => $itemChave,
+                'label' => $label,
+                'concluido' => $resposta?->concluido ?? false,
+                'concluido_por_user_id' => $resposta?->concluido_por_user_id,
+                'concluido_at' => $resposta?->concluido_at,
+            ];
+        })->values();
 
         $ticketArray = $ticket->toArray();
         $ticketArray['eventos'] = $eventos;
         $ticketArray['anexos'] = $anexos;
         $ticketArray['orcamentos'] = $orcamentos;
+        $ticketArray['issues'] = $issues;
+        $ticketArray['checklist'] = $checklist;
 
         return $ticketArray;
     }

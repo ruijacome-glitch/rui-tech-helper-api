@@ -36,6 +36,7 @@ test('token valido devolve dados do ticket sem autenticacao', function () {
 
     $response->assertStatus(200);
     $response->assertJsonPath('ticket.id', $ticket->id);
+    $response->assertJsonStructure(['ticket' => ['issues', 'checklist']]);
 });
 
 test('token invalido devolve 404', function () {
