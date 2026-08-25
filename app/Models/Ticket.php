@@ -68,6 +68,11 @@ class Ticket extends Model
         return $this->hasMany(EquipamentoRegisto::class);
     }
 
+    public function issues(): HasMany
+    {
+        return $this->hasMany(TicketIssue::class);
+    }
+
     public function mudarEstado(User $user, TicketEstado $novoEstado, ?string $observacao = null, bool $observacaoVisivelCliente = false): TicketEvento
     {
         $evento = $this->eventos()->create([
