@@ -140,7 +140,28 @@ class TicketController extends Controller
 
     private function serializeTicketDetail(Ticket $ticket): array
     {
-        $ticket->load(['cliente', 'tecnico', 'orcamentos.itens', 'orcamentos.pagamento']);
+        $ticket->load([
+            'cliente',
+            'tecnico',
+            'orcamentos.itens',
+            'orcamentos.pagamento',
+            'issues.resolvidoPor',
+            'checklistRespostas.concluidoPor',
+        ]);
+
+        $itensCategoria = config('checklists')[$ticket->categoria->value] ?? [];
+        $respostas = $ticket->checklistRespostas->keyBy('item_chave');
+        $checklist = collect($itensCategoria)->map(function ($label, $itemChave) use ($respostas) {
+            $resposta = $respostas->get($itemChave);
+
+            return [
+                'item_chave' => $itemChave,
+                'label' => $label,
+                'concluido' => $resposta?->concluido ?? false,
+                'concluido_por' => $resposta?->concluidoPor?->name,
+                'concluido_at' => $resposta?->concluido_at,
+            ];
+        })->values();
 
         return [
             'id' => $ticket->id,
@@ -150,6 +171,7 @@ class TicketController extends Controller
             'categoria' => $ticket->categoria->value,
             'prioridade' => $ticket->prioridade->value,
             'created_at' => $ticket->created_at,
+            'tracking_token' => $ticket->tracking_token,
             'cliente' => [
                 'id' => $ticket->cliente->id,
                 'nome' => $ticket->cliente->nome,
@@ -190,6 +212,15 @@ class TicketController extends Controller
                     'valor' => $orcamento->pagamento->valor,
                 ] : null,
             ]),
+            'issues' => $ticket->issues->map(fn (\App\Models\TicketIssue $issue) => [
+                'id' => $issue->id,
+                'descricao' => $issue->descricao,
+                'resultado' => $issue->resultado,
+                'observacao' => $issue->observacao,
+                'resolvido_por' => $issue->resolvidoPor?->name,
+                'resolvido_at' => $issue->resolvido_at,
+            ]),
+            'checklist' => $checklist,
         ];
     }
 
