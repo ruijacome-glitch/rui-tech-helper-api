@@ -73,6 +73,11 @@ class Ticket extends Model
         return $this->hasMany(TicketIssue::class);
     }
 
+    public function checklistRespostas(): HasMany
+    {
+        return $this->hasMany(TicketChecklistResposta::class);
+    }
+
     public function mudarEstado(User $user, TicketEstado $novoEstado, ?string $observacao = null, bool $observacaoVisivelCliente = false): TicketEvento
     {
         $evento = $this->eventos()->create([
