@@ -66,9 +66,19 @@ class TicketController extends Controller
             'observacao_visivel_cliente' => ['boolean'],
         ]);
 
+        $novoEstado = TicketEstado::from($data['estado']);
+
+        if ($ticket->estado === TicketEstado::EmAnalise && $novoEstado === TicketEstado::AguardaPeca) {
+            $itensCategoria = config('checklists')[$ticket->categoria->value] ?? [];
+            $concluidos = $ticket->checklistRespostas()->where('concluido', true)->pluck('item_chave');
+            $completa = collect(array_keys($itensCategoria))->diff($concluidos)->isEmpty();
+
+            abort_if(! $completa, 422, 'Checklist de diagnóstico incompleta.');
+        }
+
         $evento = $ticket->mudarEstado(
             $request->user(),
-            TicketEstado::from($data['estado']),
+            $novoEstado,
             $data['observacao'] ?? null,
             $data['observacao_visivel_cliente'] ?? false,
         );
