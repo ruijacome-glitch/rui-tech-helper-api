@@ -15,6 +15,7 @@ Route::post('/public/contacto', [\App\Http\Controllers\Public\ContactoController
 
 Route::prefix('public/tracking')->middleware('throttle:20,1')->group(function () {
     Route::get('/{token}', [\App\Http\Controllers\Public\TrackingController::class, 'show']);
+    Route::post('/{token}/orcamentos/{orcamento}/decisao', [\App\Http\Controllers\Public\TrackingController::class, 'decisaoOrcamento']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

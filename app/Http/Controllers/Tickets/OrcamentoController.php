@@ -61,16 +61,23 @@ class OrcamentoController extends Controller
             abort_if(empty($cliente->nif), 422, 'Complete o NIF no seu perfil antes de aceitar o orcamento.');
         }
 
-        $orcamento = DB::transaction(function () use ($orcamento, $data) {
+        $orcamento = $this->aplicarDecisao($orcamento, $data['decisao']);
+
+        return response()->json(['orcamento' => $orcamento->fresh()]);
+    }
+
+    public function aplicarDecisao(Orcamento $orcamento, string $decisao): Orcamento
+    {
+        return DB::transaction(function () use ($orcamento, $decisao) {
             $locked = Orcamento::whereKey($orcamento->id)->lockForUpdate()->firstOrFail();
             abort_if($locked->estado->value !== 'pendente', 409, 'Orcamento ja foi decidido.');
 
             $locked->update([
-                'estado' => $data['decisao'],
+                'estado' => $decisao,
                 'decided_at' => now(),
             ]);
 
-            if ($data['decisao'] === 'aprovado') {
+            if ($decisao === 'aprovado') {
                 Pagamento::create([
                     'orcamento_id' => $locked->id,
                     'estado' => PagamentoEstado::Pendente,
@@ -80,8 +87,6 @@ class OrcamentoController extends Controller
 
             return $locked;
         });
-
-        return response()->json(['orcamento' => $orcamento->fresh()]);
     }
 
     public function indexAdmin(Request $request)
