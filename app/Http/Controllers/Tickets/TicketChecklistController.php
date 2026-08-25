@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TicketChecklistController extends Controller
 {
@@ -15,18 +16,26 @@ class TicketChecklistController extends Controller
             abort_if($ticket->tecnico_id !== $request->user()->id, 403);
         }
 
-        $existente = $ticket->checklistRespostas()->where('item_chave', $itemChave)->first();
+        $itensCategoria = config('checklists')[$ticket->categoria->value] ?? [];
+        abort_if(! array_key_exists($itemChave, $itensCategoria), 422);
 
-        abort_if($existente && $existente->concluido, 409);
+        $resposta = DB::transaction(function () use ($ticket, $itemChave, $request) {
+            $existente = $ticket->checklistRespostas()
+                ->where('item_chave', $itemChave)
+                ->lockForUpdate()
+                ->first();
 
-        $resposta = $ticket->checklistRespostas()->updateOrCreate(
-            ['item_chave' => $itemChave],
-            [
-                'concluido' => true,
-                'concluido_por_user_id' => $request->user()->id,
-                'concluido_at' => now(),
-            ]
-        );
+            abort_if($existente && $existente->concluido, 409);
+
+            return $ticket->checklistRespostas()->updateOrCreate(
+                ['item_chave' => $itemChave],
+                [
+                    'concluido' => true,
+                    'concluido_por_user_id' => $request->user()->id,
+                    'concluido_at' => now(),
+                ]
+            );
+        });
 
         return response()->json(['resposta' => $resposta]);
     }

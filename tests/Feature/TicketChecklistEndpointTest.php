@@ -73,3 +73,12 @@ test('tecnico nao atribuido nao pode marcar checklist', function () {
 
     $response->assertStatus(403);
 });
+
+test('itemChave fora da checklist da categoria devolve 422', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $ticket = criarTicketComTecnicoParaChecklist();
+
+    $response = $this->actingAs($admin)->patchJson("/api/admin/tickets/{$ticket->id}/checklist/item-inexistente");
+
+    $response->assertStatus(422);
+});
