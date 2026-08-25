@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -103,7 +104,15 @@ class Ticket extends Model
         $this->update(['estado' => $novoEstado]);
 
         if ($this->cliente->email) {
-            Mail::to($this->cliente->email)->send(new TicketEstadoAlterado($evento));
+            try {
+                Mail::to($this->cliente->email)->send(new TicketEstadoAlterado($evento));
+            } catch (\Throwable $e) {
+                Log::error('Falha a enviar email de mudança de estado', [
+                    'ticket_id' => $this->id,
+                    'evento_id' => $evento->id,
+                    'erro' => $e->getMessage(),
+                ]);
+            }
         }
 
         return $evento;
