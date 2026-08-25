@@ -4,12 +4,12 @@ namespace App\Enums;
 
 enum TicketEstado: string
 {
-    case Aberto = 'aberto';
-    case EmAnalise = 'em_analise';
-    case EmCurso = 'em_curso';
-    case AguardaCliente = 'aguarda_cliente';
-    case AguardaPeca = 'aguarda_peca';
-    case EmTestes = 'em_testes';
-    case Resolvido = 'resolvido';
+    case Aberto = 'recebido';
+    case EmAnalise = 'em_diagnostico';
+    case EmCurso = 'em_reparacao';
+    case AguardaCliente = 'pronto_levantamento';
+    case AguardaPeca = 'aguarda_pecas';
+    case EmTestes = 'reparacao_concluida';
+    case Resolvido = 'entregue';
     case Cancelado = 'cancelado';
 }

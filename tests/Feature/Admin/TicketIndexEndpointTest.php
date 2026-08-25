@@ -46,11 +46,11 @@ test('admin filtra tickets por estado', function () {
     Ticket::factory()->create(['cliente_id' => $cliente->id, 'categoria' => TicketCategoria::Hardware, 'prioridade' => TicketPrioridade::Normal, 'estado' => TicketEstado::Aberto, 'origem' => TicketOrigem::Admin]);
     Ticket::factory()->create(['cliente_id' => $cliente->id, 'categoria' => TicketCategoria::Hardware, 'prioridade' => TicketPrioridade::Normal, 'estado' => TicketEstado::Resolvido, 'origem' => TicketOrigem::Admin]);
 
-    $response = $this->actingAs($admin)->getJson('/api/admin/tickets?estado=resolvido');
+    $response = $this->actingAs($admin)->getJson('/api/admin/tickets?estado=entregue');
 
     $response->assertOk();
     $response->assertJsonCount(1, 'data');
-    $response->assertJsonPath('data.0.estado', 'resolvido');
+    $response->assertJsonPath('data.0.estado', 'entregue');
 });
 
 test('admin filtro com estado invalido devolve 422', function () {

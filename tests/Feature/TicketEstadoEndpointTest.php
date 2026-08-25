@@ -35,13 +35,13 @@ test('admin muda estado de qualquer ticket', function () {
     $ticket = criarTicketComTecnico();
 
     $response = $this->actingAs($admin)->patchJson("/api/admin/tickets/{$ticket->id}/estado", [
-        'estado' => 'em_analise',
+        'estado' => 'em_diagnostico',
         'observacao' => 'A analisar',
         'observacao_visivel_cliente' => true,
     ]);
 
     $response->assertStatus(200);
-    $response->assertJsonPath('ticket.estado', 'em_analise');
+    $response->assertJsonPath('ticket.estado', 'em_diagnostico');
 });
 
 test('tecnico atribuido muda estado do seu ticket', function () {
@@ -49,11 +49,11 @@ test('tecnico atribuido muda estado do seu ticket', function () {
     $ticket = criarTicketComTecnico($tecnico);
 
     $response = $this->actingAs($tecnico)->patchJson("/api/tecnico/tickets/{$ticket->id}/estado", [
-        'estado' => 'em_curso',
+        'estado' => 'em_reparacao',
     ]);
 
     $response->assertStatus(200);
-    $response->assertJsonPath('ticket.estado', 'em_curso');
+    $response->assertJsonPath('ticket.estado', 'em_reparacao');
 });
 
 test('tecnico nao atribuido nao pode mudar estado', function () {
@@ -62,7 +62,7 @@ test('tecnico nao atribuido nao pode mudar estado', function () {
     $ticket = criarTicketComTecnico($outroTecnico);
 
     $response = $this->actingAs($tecnico)->patchJson("/api/tecnico/tickets/{$ticket->id}/estado", [
-        'estado' => 'em_curso',
+        'estado' => 'em_reparacao',
     ]);
 
     $response->assertStatus(403);

@@ -42,7 +42,7 @@ test('admin ve kpis do dashboard', function () {
     $response->assertJsonPath('pendentes', 1);
     $response->assertJsonPath('faturacao_mes', '100.00');
     $response->assertJsonPath('agendamentos.total', 0);
-    $response->assertJsonPath('por_estado.resolvido', 1);
+    $response->assertJsonPath('por_estado.entregue', 1);
     $response->assertJsonPath('por_estado.cancelado', 1);
     $response->assertJsonCount(3, 'intervencoes_recentes');
 });

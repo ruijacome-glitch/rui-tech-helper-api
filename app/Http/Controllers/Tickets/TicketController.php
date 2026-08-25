@@ -61,7 +61,7 @@ class TicketController extends Controller
         }
 
         $data = $request->validate([
-            'estado' => ['required', 'in:aberto,em_analise,em_curso,aguarda_cliente,aguarda_peca,em_testes,resolvido,cancelado'],
+            'estado' => ['required', 'in:recebido,em_diagnostico,em_reparacao,pronto_levantamento,aguarda_pecas,reparacao_concluida,entregue,cancelado'],
             'observacao' => ['nullable', 'string'],
             'observacao_visivel_cliente' => ['boolean'],
         ]);

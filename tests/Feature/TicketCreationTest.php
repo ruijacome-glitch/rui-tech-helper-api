@@ -29,7 +29,7 @@ test('admin cria ticket', function () {
     ]);
 
     $response->assertStatus(201);
-    $response->assertJsonPath('ticket.estado', 'aberto');
+    $response->assertJsonPath('ticket.estado', 'recebido');
     $response->assertJsonPath('ticket.origem', 'admin');
 });
 
@@ -78,7 +78,7 @@ test('cliente cria ticket para si proprio, origem e estado forcados', function (
 
     $response->assertStatus(201);
     $response->assertJsonPath('ticket.origem', 'cliente');
-    $response->assertJsonPath('ticket.estado', 'aberto');
+    $response->assertJsonPath('ticket.estado', 'recebido');
     $response->assertJsonPath('ticket.cliente_id', $cliente->id);
 });
 
@@ -122,12 +122,12 @@ test('mass assignment de estado e origem e ignorado na rota admin', function () 
         'prioridade' => 'normal',
         'titulo' => 'PC nao liga',
         'descricao' => 'Nao arranca.',
-        'estado' => 'resolvido',
+        'estado' => 'entregue',
         'origem' => 'cliente',
     ]);
 
     $response->assertStatus(201);
-    $response->assertJsonPath('ticket.estado', 'aberto');
+    $response->assertJsonPath('ticket.estado', 'recebido');
     $response->assertJsonPath('ticket.origem', 'admin');
 });
 
