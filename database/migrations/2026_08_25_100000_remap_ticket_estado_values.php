@@ -17,19 +17,31 @@ return new class extends Migration
 
     public function up(): void
     {
-        foreach ($this->mapa as $antigo => $novo) {
-            DB::table('tickets')->where('estado', $antigo)->update(['estado' => $novo]);
-            DB::table('ticket_eventos')->where('estado_anterior', $antigo)->update(['estado_anterior' => $novo]);
-            DB::table('ticket_eventos')->where('estado_novo', $antigo)->update(['estado_novo' => $novo]);
+        DB::transaction(function () {
+            foreach ($this->mapa as $antigo => $novo) {
+                DB::table('tickets')->where('estado', $antigo)->update(['estado' => $novo]);
+                DB::table('ticket_eventos')->where('estado_anterior', $antigo)->update(['estado_anterior' => $novo]);
+                DB::table('ticket_eventos')->where('estado_novo', $antigo)->update(['estado_novo' => $novo]);
+            }
+        });
+
+        if (DB::connection()->getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE tickets ALTER estado SET DEFAULT 'recebido'");
         }
     }
 
     public function down(): void
     {
-        foreach (array_flip($this->mapa) as $novo => $antigo) {
-            DB::table('tickets')->where('estado', $novo)->update(['estado' => $antigo]);
-            DB::table('ticket_eventos')->where('estado_anterior', $novo)->update(['estado_anterior' => $antigo]);
-            DB::table('ticket_eventos')->where('estado_novo', $novo)->update(['estado_novo' => $antigo]);
+        DB::transaction(function () {
+            foreach (array_flip($this->mapa) as $novo => $antigo) {
+                DB::table('tickets')->where('estado', $novo)->update(['estado' => $antigo]);
+                DB::table('ticket_eventos')->where('estado_anterior', $novo)->update(['estado_anterior' => $antigo]);
+                DB::table('ticket_eventos')->where('estado_novo', $novo)->update(['estado_novo' => $antigo]);
+            }
+        });
+
+        if (DB::connection()->getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE tickets ALTER estado SET DEFAULT 'aberto'");
         }
     }
 };
