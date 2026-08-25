@@ -81,3 +81,15 @@ test('resposta nao inclui ids de staff em issues e checklist', function () {
         ->not->toContain('resolvido_por_user_id')
         ->not->toContain('concluido_por_user_id');
 });
+
+test('resposta nao inclui tecnico_id do ticket', function () {
+    $ticket = criarTicketParaTracking();
+    $tecnico = User::factory()->create(['role' => 'tecnico']);
+    $ticket->update(['tecnico_id' => $tecnico->id]);
+
+    $response = $this->getJson("/api/public/tracking/{$ticket->tracking_token}");
+
+    $response->assertStatus(200);
+    $response->assertJsonMissingPath('ticket.tecnico_id');
+    expect($response->getContent())->not->toContain('tecnico_id');
+});

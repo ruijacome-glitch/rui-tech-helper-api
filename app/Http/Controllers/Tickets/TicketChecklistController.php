@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tickets;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -27,14 +28,22 @@ class TicketChecklistController extends Controller
 
             abort_if($existente && $existente->concluido, 409);
 
-            return $ticket->checklistRespostas()->updateOrCreate(
-                ['item_chave' => $itemChave],
-                [
-                    'concluido' => true,
-                    'concluido_por_user_id' => $request->user()->id,
-                    'concluido_at' => now(),
-                ]
-            );
+            try {
+                return $ticket->checklistRespostas()->updateOrCreate(
+                    ['item_chave' => $itemChave],
+                    [
+                        'concluido' => true,
+                        'concluido_por_user_id' => $request->user()->id,
+                        'concluido_at' => now(),
+                    ]
+                );
+            } catch (QueryException $e) {
+                if ($e->getCode() === '23000') {
+                    abort(409);
+                }
+
+                throw $e;
+            }
         });
 
         return response()->json(['resposta' => $resposta]);

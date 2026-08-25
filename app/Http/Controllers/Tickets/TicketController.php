@@ -280,6 +280,7 @@ class TicketController extends Controller
         })->values();
 
         $ticketArray = $ticket->toArray();
+        unset($ticketArray['tecnico_id']);
         $ticketArray['eventos'] = $eventos;
         $ticketArray['anexos'] = $anexos;
         $ticketArray['orcamentos'] = $orcamentos;
