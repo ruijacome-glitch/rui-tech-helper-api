@@ -37,6 +37,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/tickets/{ticket}/anexos', [\App\Http\Controllers\Tickets\AnexoController::class, 'store']);
     Route::post('/tickets/{ticket}/issues', [\App\Http\Controllers\Tickets\TicketIssueController::class, 'store']);
     Route::patch('/tickets/{ticket}/issues/{issue}', [\App\Http\Controllers\Tickets\TicketIssueController::class, 'update']);
+    Route::patch('/tickets/{ticket}/checklist/{itemChave}', [\App\Http\Controllers\Tickets\TicketChecklistController::class, 'toggle']);
     Route::post('/orcamentos/{orcamento}/pagamento/marcar-pago', [\App\Http\Controllers\Tickets\PagamentoController::class, 'marcarPago']);
 });
 
@@ -50,6 +51,7 @@ Route::middleware(['auth:sanctum', 'role:tecnico'])->prefix('tecnico')->group(fu
     Route::post('/tickets/{ticket}/anexos', [\App\Http\Controllers\Tickets\AnexoController::class, 'store']);
     Route::post('/tickets/{ticket}/issues', [\App\Http\Controllers\Tickets\TicketIssueController::class, 'store']);
     Route::patch('/tickets/{ticket}/issues/{issue}', [\App\Http\Controllers\Tickets\TicketIssueController::class, 'update']);
+    Route::patch('/tickets/{ticket}/checklist/{itemChave}', [\App\Http\Controllers\Tickets\TicketChecklistController::class, 'toggle']);
 });
 
 Route::middleware(['auth:sanctum', 'role:cliente'])->prefix('cliente')->group(function () {
