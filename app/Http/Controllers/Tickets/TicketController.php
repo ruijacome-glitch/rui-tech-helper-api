@@ -76,6 +76,12 @@ class TicketController extends Controller
             abort_if(! $completa, 422, 'Checklist de diagnóstico incompleta.');
         }
 
+        if ($ticket->estado === TicketEstado::EmCurso && $novoEstado === TicketEstado::EmTestes) {
+            $pendentes = $ticket->issues()->where('resultado', 'pendente')->exists();
+
+            abort_if($pendentes, 422, 'Existem issues por resolver.');
+        }
+
         $evento = $ticket->mudarEstado(
             $request->user(),
             $novoEstado,

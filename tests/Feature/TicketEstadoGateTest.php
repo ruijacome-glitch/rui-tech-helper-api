@@ -74,3 +74,43 @@ test('outras transicoes nao sao bloqueadas por checklist incompleta', function (
 
     $response->assertStatus(200);
 });
+
+test('avancar de em_reparacao para reparacao_concluida falha com issue pendente', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $ticket = criarTicketEmDiagnostico();
+    $ticket->update(['estado' => TicketEstado::EmCurso]);
+    $ticket->issues()->create(['descricao' => 'Ventoinha ruidosa']);
+
+    $response = $this->actingAs($admin)->patchJson("/api/admin/tickets/{$ticket->id}/estado", [
+        'estado' => 'reparacao_concluida',
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonPath('message', 'Existem issues por resolver.');
+});
+
+test('avancar de em_reparacao para reparacao_concluida funciona sem issues pendentes', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $ticket = criarTicketEmDiagnostico();
+    $ticket->update(['estado' => TicketEstado::EmCurso]);
+    $issue = $ticket->issues()->create(['descricao' => 'Ventoinha ruidosa']);
+    $issue->update(['resultado' => 'resolvido', 'resolvido_por_user_id' => $admin->id, 'resolvido_at' => now()]);
+
+    $response = $this->actingAs($admin)->patchJson("/api/admin/tickets/{$ticket->id}/estado", [
+        'estado' => 'reparacao_concluida',
+    ]);
+
+    $response->assertStatus(200);
+});
+
+test('avancar de em_reparacao para reparacao_concluida funciona sem issues registadas', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $ticket = criarTicketEmDiagnostico();
+    $ticket->update(['estado' => TicketEstado::EmCurso]);
+
+    $response = $this->actingAs($admin)->patchJson("/api/admin/tickets/{$ticket->id}/estado", [
+        'estado' => 'reparacao_concluida',
+    ]);
+
+    $response->assertStatus(200);
+});
