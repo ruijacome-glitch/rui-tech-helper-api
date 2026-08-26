@@ -6,6 +6,7 @@ use App\Enums\TicketCategoria;
 use App\Enums\TicketEstado;
 use App\Enums\TicketOrigem;
 use App\Enums\TicketPrioridade;
+use App\Mail\TicketCriado;
 use App\Mail\TicketEstadoAlterado;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -38,6 +39,19 @@ class Ticket extends Model
     {
         static::creating(function (Ticket $ticket) {
             $ticket->tracking_token ??= (string) Str::uuid();
+        });
+
+        static::created(function (Ticket $ticket) {
+            if ($ticket->cliente->email) {
+                try {
+                    Mail::to($ticket->cliente->email)->send(new TicketCriado($ticket));
+                } catch (\Throwable $e) {
+                    Log::error('Falha a enviar email de ticket criado', [
+                        'ticket_id' => $ticket->id,
+                        'erro' => $e->getMessage(),
+                    ]);
+                }
+            }
         });
     }
 
