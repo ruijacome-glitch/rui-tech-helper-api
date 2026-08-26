@@ -31,6 +31,7 @@ class TicketEstadoAlterado extends Mailable
             with: [
                 'ticket' => $this->evento->ticket,
                 'evento' => $this->evento,
+                'trackingUrl' => rtrim(config('services.tracking_url'), '/').'/t/'.$this->evento->ticket->tracking_token,
             ],
         );
     }
