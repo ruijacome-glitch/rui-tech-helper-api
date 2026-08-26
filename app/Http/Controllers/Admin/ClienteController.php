@@ -11,6 +11,7 @@ use App\Models\Orcamento;
 use App\Models\Pagamento;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -69,7 +70,14 @@ class ClienteController extends Controller
         ]);
 
         if ($cliente->email) {
-            Mail::to($cliente->email)->send(new ConviteCliente($convite, $plaintextToken));
+            try {
+                Mail::to($cliente->email)->send(new ConviteCliente($convite, $plaintextToken));
+            } catch (\Throwable $e) {
+                Log::error('Falha a enviar email de convite', [
+                    'cliente_id' => $cliente->id,
+                    'erro' => $e->getMessage(),
+                ]);
+            }
         }
 
         return response()->json(['cliente' => $cliente], 201);

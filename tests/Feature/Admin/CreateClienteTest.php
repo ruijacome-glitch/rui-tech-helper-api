@@ -30,3 +30,21 @@ test('tecnico cannot create clientes', function () {
     $this->actingAs($tecnico)->postJson('/api/admin/clientes', ['nome' => 'Ana Silva'])
         ->assertForbidden();
 });
+
+test('email de convite usa layout com botao de activacao', function () {
+    Mail::fake();
+
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+
+    $this->actingAs($admin)->postJson('/api/admin/clientes', [
+        'nome' => 'Cliente Novo',
+        'email' => 'novo@example.com',
+        'telefone' => '912345678',
+    ]);
+
+    Mail::assertSent(ConviteCliente::class, function ($mail) {
+        $rendered = $mail->render();
+
+        return str_contains($rendered, 'Ativar conta') && str_contains($rendered, 'O Rui dos Computadores');
+    });
+});
