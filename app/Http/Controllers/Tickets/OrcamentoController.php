@@ -11,6 +11,7 @@ use App\Models\Pagamento;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
@@ -42,7 +43,14 @@ class OrcamentoController extends Controller
         $orcamento->load('itens');
 
         if ($ticket->cliente->email) {
-            Mail::to($ticket->cliente->email)->send(new OrcamentoPronto($orcamento));
+            try {
+                Mail::to($ticket->cliente->email)->send(new OrcamentoPronto($orcamento));
+            } catch (\Throwable $e) {
+                Log::error('Falha a enviar email de orcamento pronto', [
+                    'orcamento_id' => $orcamento->id,
+                    'erro' => $e->getMessage(),
+                ]);
+            }
         }
 
         return response()->json(['orcamento' => $orcamento], 201);
