@@ -24,6 +24,8 @@ return [
 
     'frontend_url' => env('FRONTEND_PUBLIC_URL'),
 
+    'tracking_url' => env('TRACKING_URL', 'https://tracking.oruidoscomputadores.pt'),
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
