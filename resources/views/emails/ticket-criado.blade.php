@@ -3,26 +3,34 @@
 @section('subject', 'Recebemos o teu pedido')
 
 @section('content')
-    <p>Olá {{ $ticket->cliente->nome }},</p>
+    <p style="margin:0 0 4px 0;">Olá {{ $ticket->cliente->nome }},</p>
 
-    <p>Recebemos o teu pedido e já está no nosso sistema:</p>
+    <p style="margin:0 0 20px 0;">Recebemos o teu pedido e já está registado no nosso sistema.</p>
 
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f5; border-radius:6px; margin: 16px 0;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; margin: 0 0 20px 0;">
         <tr>
-            <td style="padding: 16px;">
-                <p style="margin:0 0 8px 0; font-weight:bold; font-size:16px;">{{ $ticket->titulo }}</p>
-                <p style="margin:0; color:#6b7280; font-size:13px;">
-                    Categoria: {{ ucfirst($ticket->categoria->value) }} &middot; Prioridade: {{ ucfirst($ticket->prioridade->value) }}
-                </p>
+            <td style="padding: 18px 20px;">
+                <p style="margin:0 0 4px 0; color:#64748b; font-size:11px; font-weight:bold; letter-spacing:.6px; text-transform:uppercase;">Pedido</p>
+                <p style="margin:0 0 10px 0; font-weight:bold; font-size:16px; color:#0F1B2E;">{{ $ticket->titulo }}</p>
+                <table role="presentation" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td style="padding:0 12px 0 0; color:#64748b; font-size:13px;">Categoria: <strong style="color:#334155;">{{ ucfirst($ticket->categoria->value) }}</strong></td>
+                        <td style="color:#64748b; font-size:13px;">Prioridade: <strong style="color:#334155;">{{ ucfirst($ticket->prioridade->value) }}</strong></td>
+                    </tr>
+                </table>
             </td>
         </tr>
     </table>
 
-    <p>{{ $ticket->descricao }}</p>
+    <p style="margin:0 0 20px 0;">{{ $ticket->descricao }}</p>
 
-    <p style="text-align:center; margin: 24px 0;">
-        <a href="{{ $trackingUrl }}" style="background-color:#2E7FFF; color:#ffffff; text-decoration:none; padding: 12px 24px; border-radius:6px; font-weight:bold; display:inline-block;">Acompanhar pedido</a>
-    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td align="center" style="padding: 4px 0 20px 0;">
+                <a href="{{ $trackingUrl }}" style="background-color:#2E7FFF; color:#ffffff; text-decoration:none; padding: 14px 28px; border-radius:6px; border-bottom:2px solid #1d5fd6; font-weight:bold; font-size:14px; display:inline-block;">Acompanhar pedido</a>
+            </td>
+        </tr>
+    </table>
 
-    <p>- O Rui dos Computadores</p>
+    <p style="margin:0; color:#64748b; font-size:13px;">— O Rui dos Computadores</p>
 @endsection
