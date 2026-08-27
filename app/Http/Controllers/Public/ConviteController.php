@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Convite;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ConviteController extends Controller
@@ -59,9 +58,10 @@ class ConviteController extends Controller
             return $user;
         });
 
-        Auth::login($user);
-        $request->session()->regenerate();
-
+        // No client portal exists yet to consume a session, and this route
+        // isn't in SANCTUM_STATEFUL_DOMAINS (public site origin), so
+        // Auth::login()+session regenerate blows up with "Session store
+        // not set on request." Just confirm creation; nothing to log in to.
         return response()->json(['user' => ['id' => $user->id, 'name' => $user->name, 'role' => $user->role->value]]);
     }
 }
