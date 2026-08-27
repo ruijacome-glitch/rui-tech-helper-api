@@ -43,6 +43,7 @@ return [
         'mb_key' => env('IFTHENPAY_MB_KEY'),
         'mbway_key' => env('IFTHENPAY_MBWAY_KEY'),
         'antiphishing_key' => env('IFTHENPAY_ANTIPHISHING_KEY'),
+        'sandbox' => env('IFTHENPAY_SANDBOX', false),
     ],
 
     'moloni' => [

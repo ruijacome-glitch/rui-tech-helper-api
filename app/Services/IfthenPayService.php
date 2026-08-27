@@ -10,16 +10,21 @@ use RuntimeException;
 
 class IfthenPayService
 {
-    private const MB_ENDPOINT = 'https://ifthenpay.com/api/multibanco/reference/init';
-    private const MBWAY_ENDPOINT = 'https://ifthenpay.com/api/mbway/mb/wayrequest';
+    private const MB_BASE = 'https://api.ifthenpay.com/multibanco/reference';
+    private const MBWAY_ENDPOINT = 'https://api.ifthenpay.com/spg/payment/mbway';
+
+    private function mbEndpoint(): string
+    {
+        return self::MB_BASE.(config('services.ifthenpay.sandbox') ? '/sandbox' : '/init');
+    }
 
     public function gerarReferenciaMb(Pagamento $pagamento): Pagamento
     {
         try {
-            $response = Http::asForm()->timeout(10)->connectTimeout(5)->post(self::MB_ENDPOINT, [
+            $response = Http::asJson()->timeout(10)->connectTimeout(5)->post($this->mbEndpoint(), [
                 'mbKey' => config('services.ifthenpay.mb_key'),
                 'orderId' => (string) $pagamento->orcamento_id,
-                'amount' => (string) $pagamento->valor,
+                'amount' => number_format((float) $pagamento->valor, 2, '.', ''),
             ]);
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             throw new RuntimeException('Falha de ligacao ao gerar referencia Multibanco: '.$e->getMessage(), previous: $e);
@@ -27,15 +32,15 @@ class IfthenPayService
 
         $body = $response->json();
 
-        if (! $response->successful() || empty($body['Entidade']) || empty($body['Referencia'])) {
+        if (! $response->successful() || empty($body['Entity']) || empty($body['Reference'])) {
             throw new RuntimeException('Falha ao gerar referencia Multibanco: '.($body['Message'] ?? 'erro desconhecido'));
         }
 
         $pagamento->update([
             'metodo' => PagamentoMetodo::Mb,
             'estado' => PagamentoEstado::Pendente,
-            'entidade' => $body['Entidade'],
-            'referencia' => $body['Referencia'],
+            'entidade' => $body['Entity'],
+            'referencia' => $body['Reference'],
             'ifthenpay_request_id' => $body['RequestId'] ?? null,
             'telefone' => null,
             'expires_at' => now()->addHours(48),
@@ -47,11 +52,11 @@ class IfthenPayService
     public function gerarPedidoMbway(Pagamento $pagamento, string $telefone): Pagamento
     {
         try {
-            $response = Http::asForm()->timeout(10)->connectTimeout(5)->post(self::MBWAY_ENDPOINT, [
-                'mbwaykey' => config('services.ifthenpay.mbway_key'),
-                'orderid' => (string) $pagamento->orcamento_id,
-                'amount' => (string) $pagamento->valor,
-                'mobilenumber' => $telefone,
+            $response = Http::asJson()->timeout(10)->connectTimeout(5)->post(self::MBWAY_ENDPOINT, [
+                'mbWayKey' => config('services.ifthenpay.mbway_key'),
+                'orderId' => (string) $pagamento->orcamento_id,
+                'amount' => number_format((float) $pagamento->valor, 2, '.', ''),
+                'mobileNumber' => $this->formatarTelefone($telefone),
             ]);
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             throw new RuntimeException('Falha de ligacao ao gerar pedido MB WAY: '.$e->getMessage(), previous: $e);
@@ -74,5 +79,25 @@ class IfthenPayService
         ]);
 
         return $pagamento->fresh();
+    }
+
+    /**
+     * IfthenPay MB WAY API exige formato "351#912345678" (indicativo + '#' + numero).
+     * Aceita numero ja formatado, com/sem indicativo, com espacos/traços.
+     */
+    private function formatarTelefone(string $telefone): string
+    {
+        if (str_contains($telefone, '#')) {
+            return $telefone;
+        }
+
+        $digitos = preg_replace('/\D/', '', $telefone);
+        $digitos = ltrim($digitos, '0');
+
+        if (str_starts_with($digitos, '351') && strlen($digitos) > 9) {
+            return '351#'.substr($digitos, 3);
+        }
+
+        return '351#'.$digitos;
     }
 }
