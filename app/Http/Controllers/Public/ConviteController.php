@@ -12,6 +12,19 @@ use Illuminate\Support\Facades\DB;
 
 class ConviteController extends Controller
 {
+    public function show(string $token)
+    {
+        $convite = Convite::where('token_hash', hash('sha256', $token))->first();
+
+        abort_if(! $convite, 404, 'Convite não encontrado.');
+        abort_if($convite->isExpired() || $convite->isUsed(), 410, 'Convite expirado ou já utilizado.');
+
+        return response()->json([
+            'nome' => $convite->cliente->nome,
+            'email' => $convite->cliente->email,
+        ]);
+    }
+
     public function completar(Request $request, string $token)
     {
         $convite = Convite::where('token_hash', hash('sha256', $token))->first();

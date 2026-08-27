@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [SessionController::class, 'store'])->middleware('throttle:5,1');
 
+Route::get('/convites/{token}', [\App\Http\Controllers\Public\ConviteController::class, 'show']);
 Route::post('/convites/{token}/completar', [\App\Http\Controllers\Public\ConviteController::class, 'completar']);
 
 Route::post('/webhooks/ifthenpay', [\App\Http\Controllers\Public\WebhookController::class, 'ifthenpay']);
