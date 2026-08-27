@@ -32,7 +32,7 @@ class ConviteController extends Controller
         abort_if($convite->isExpired() || $convite->isUsed(), 410, 'Convite expirado ou já utilizado.');
 
         $data = $request->validate([
-            'email' => ['required', 'email', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'morada' => ['nullable', 'string', 'max:255'],
             'nif' => ['nullable', 'digits:9'],
             'password' => ['required', 'string', 'min:10'],
