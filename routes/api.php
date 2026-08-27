@@ -29,6 +29,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/clientes', [\App\Http\Controllers\Admin\ClienteController::class, 'store']);
     Route::get('/clientes', [\App\Http\Controllers\Admin\ClienteController::class, 'index']);
     Route::get('/clientes/{cliente}', [\App\Http\Controllers\Admin\ClienteController::class, 'show']);
+    Route::post('/clientes/{cliente}/reenviar-convite', [\App\Http\Controllers\Admin\ClienteController::class, 'reenviarConvite']);
     Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index']);
     Route::post('/tickets', [\App\Http\Controllers\Tickets\TicketController::class, 'store']);
     Route::get('/tickets', [\App\Http\Controllers\Tickets\TicketController::class, 'indexAdmin']);

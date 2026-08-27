@@ -83,6 +83,35 @@ class ClienteController extends Controller
         return response()->json(['cliente' => $cliente], 201);
     }
 
+    public function reenviarConvite(Cliente $cliente)
+    {
+        abort_if(! $cliente->email, 422, 'Cliente não tem email definido.');
+
+        Convite::where('cliente_id', $cliente->id)
+            ->whereNull('used_at')
+            ->update(['used_at' => now()]);
+
+        $plaintextToken = Str::random(64);
+        $convite = Convite::create([
+            'cliente_id' => $cliente->id,
+            'token_hash' => hash('sha256', $plaintextToken),
+            'expires_at' => now()->addDays(7),
+        ]);
+
+        try {
+            Mail::to($cliente->email)->send(new ConviteCliente($convite, $plaintextToken));
+        } catch (\Throwable $e) {
+            Log::error('Falha a enviar email de convite', [
+                'cliente_id' => $cliente->id,
+                'erro' => $e->getMessage(),
+            ]);
+
+            return response()->json(['message' => 'Convite criado mas envio de email falhou.'], 502);
+        }
+
+        return response()->json(['message' => 'Convite reenviado.']);
+    }
+
     public function show(Cliente $cliente)
     {
         $cliente->load(['tickets' => fn ($q) => $q->latest()->limit(20)]);
