@@ -83,6 +83,43 @@ class ClienteController extends Controller
         return response()->json(['cliente' => $cliente], 201);
     }
 
+    public function update(Request $request, Cliente $cliente)
+    {
+        $data = $request->validate([
+            'nome' => ['required', 'string', 'max:255'],
+            'telefone' => ['nullable', 'string', 'max:20'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'morada' => ['nullable', 'string', 'max:255'],
+            'nif' => ['nullable', 'digits:9'],
+            'notas' => ['nullable', 'string'],
+        ]);
+
+        $cliente->update($data);
+
+        return response()->json(['cliente' => $cliente]);
+    }
+
+    public function destroy(Cliente $cliente)
+    {
+        $bloqueios = [];
+
+        if ($cliente->tickets()->exists()) {
+            $bloqueios[] = 'intervenções';
+        }
+        if ($cliente->agendamentos()->exists()) {
+            $bloqueios[] = 'agendamentos';
+        }
+        if ($cliente->equipamentos()->exists()) {
+            $bloqueios[] = 'equipamentos';
+        }
+
+        abort_if($bloqueios !== [], 409, 'Cliente tem '.implode(', ', $bloqueios).' associados. Não pode ser apagado.');
+
+        $cliente->delete();
+
+        return response()->json(['message' => 'Cliente apagado.']);
+    }
+
     public function reenviarConvite(Cliente $cliente)
     {
         abort_if(! $cliente->email, 422, 'Cliente não tem email definido.');

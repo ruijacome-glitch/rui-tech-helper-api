@@ -19,4 +19,14 @@ class Cliente extends Model
     {
         return $this->hasMany(Ticket::class);
     }
+
+    public function agendamentos(): HasMany
+    {
+        return $this->hasMany(Agendamento::class);
+    }
+
+    public function equipamentos(): HasMany
+    {
+        return $this->hasMany(Equipamento::class);
+    }
 }
