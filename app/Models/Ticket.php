@@ -95,6 +95,11 @@ class Ticket extends Model
         return $this->hasMany(EquipamentoRegisto::class);
     }
 
+    public function equipamento(): BelongsTo
+    {
+        return $this->belongsTo(Equipamento::class);
+    }
+
     public function issues(): HasMany
     {
         return $this->hasMany(TicketIssue::class);

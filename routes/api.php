@@ -44,6 +44,18 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::patch('/tickets/{ticket}/issues/{issue}', [\App\Http\Controllers\Tickets\TicketIssueController::class, 'update']);
     Route::patch('/tickets/{ticket}/checklist/{itemChave}', [\App\Http\Controllers\Tickets\TicketChecklistController::class, 'toggle']);
     Route::post('/orcamentos/{orcamento}/pagamento/marcar-pago', [\App\Http\Controllers\Tickets\PagamentoController::class, 'marcarPago']);
+    Route::get('/agendamentos', [\App\Http\Controllers\Admin\AgendamentoController::class, 'index']);
+    Route::post('/agendamentos', [\App\Http\Controllers\Admin\AgendamentoController::class, 'store']);
+    Route::patch('/agendamentos/{agendamento}', [\App\Http\Controllers\Admin\AgendamentoController::class, 'update']);
+    Route::delete('/agendamentos/{agendamento}', [\App\Http\Controllers\Admin\AgendamentoController::class, 'destroy']);
+    Route::get('/equipamentos', [\App\Http\Controllers\Admin\EquipamentoController::class, 'index']);
+    Route::post('/equipamentos', [\App\Http\Controllers\Admin\EquipamentoController::class, 'store']);
+    Route::get('/equipamentos/{equipamento}', [\App\Http\Controllers\Admin\EquipamentoController::class, 'show']);
+    Route::patch('/equipamentos/{equipamento}', [\App\Http\Controllers\Admin\EquipamentoController::class, 'update']);
+    Route::get('/pecas', [\App\Http\Controllers\Admin\PecaController::class, 'index']);
+    Route::post('/pecas', [\App\Http\Controllers\Admin\PecaController::class, 'store']);
+    Route::patch('/pecas/{peca}', [\App\Http\Controllers\Admin\PecaController::class, 'update']);
+    Route::post('/pecas/{peca}/movimentar', [\App\Http\Controllers\Admin\PecaController::class, 'movimentar']);
 });
 
 Route::middleware(['auth:sanctum', 'role:tecnico'])->prefix('tecnico')->group(function () {
