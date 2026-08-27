@@ -8,7 +8,7 @@ Route::post('/login', [SessionController::class, 'store'])->middleware('throttle
 Route::get('/convites/{token}', [\App\Http\Controllers\Public\ConviteController::class, 'show']);
 Route::post('/convites/{token}/completar', [\App\Http\Controllers\Public\ConviteController::class, 'completar']);
 
-Route::post('/webhooks/ifthenpay', [\App\Http\Controllers\Public\WebhookController::class, 'ifthenpay']);
+Route::match(['get', 'post'], '/webhooks/ifthenpay', [\App\Http\Controllers\Public\WebhookController::class, 'ifthenpay']);
 
 Route::get('/public/conteudo-site', [\App\Http\Controllers\Public\ConteudoSiteController::class, 'index']);
 
