@@ -29,7 +29,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/clientes', [\App\Http\Controllers\Admin\ClienteController::class, 'store']);
     Route::get('/clientes', [\App\Http\Controllers\Admin\ClienteController::class, 'index']);
     Route::get('/clientes/{cliente}', [\App\Http\Controllers\Admin\ClienteController::class, 'show']);
-    Route::put('/clientes/{cliente}', [\App\Http\Controllers\Admin\ClienteController::class, 'update']);
+    Route::match(['put', 'patch'], '/clientes/{cliente}', [\App\Http\Controllers\Admin\ClienteController::class, 'update']);
     Route::delete('/clientes/{cliente}', [\App\Http\Controllers\Admin\ClienteController::class, 'destroy']);
     Route::post('/clientes/{cliente}/reenviar-convite', [\App\Http\Controllers\Admin\ClienteController::class, 'reenviarConvite']);
     Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index']);
