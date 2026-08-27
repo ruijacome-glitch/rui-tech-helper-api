@@ -6,9 +6,12 @@ use App\Enums\PagamentoEstado;
 use App\Enums\PagamentoOrigem;
 use App\Http\Controllers\Controller;
 use App\Jobs\EmitirFacturaRecibo;
+use App\Mail\PagamentoRecebido;
 use App\Models\Pagamento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class WebhookController extends Controller
 {
@@ -36,7 +39,22 @@ class WebhookController extends Controller
                 'paid_at' => now(),
             ]);
 
-            EmitirFacturaRecibo::dispatch($locked->fresh());
+            $pago = $locked->fresh();
+
+            EmitirFacturaRecibo::dispatch($pago);
+
+            $cliente = $pago->orcamento->ticket->cliente;
+
+            if ($cliente->email) {
+                try {
+                    Mail::to($cliente->email)->send(new PagamentoRecebido($pago));
+                } catch (\Throwable $e) {
+                    Log::error('Falha a enviar email de pagamento recebido', [
+                        'pagamento_id' => $pago->id,
+                        'erro' => $e->getMessage(),
+                    ]);
+                }
+            }
         });
 
         return response()->json(['ok' => true]);
